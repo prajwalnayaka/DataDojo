@@ -2,6 +2,7 @@ import json
 import random
 import csv
 import re
+from pathlib import Path
 
 
 # ==========================================
@@ -68,7 +69,10 @@ def generate_row(blueprint):
                 fake_row[col_name] = generate_categorical(rule)
 
             elif "Numbers" in rule or "integers" in rule:
+
                 fake_row[col_name] = generate_number(rule)
+            elif "Text/String" in rule:
+                fake_row[col_name] = f"UID-{random.randint(10000, 99999)}"
 
             else:
                 fake_row[col_name] = "UNKNOWN"
@@ -80,7 +84,7 @@ def generate_row(blueprint):
 # 3. THE PIPELINE (Execution)
 # ==========================================
 
-def run_genesis(blueprint_path, output_csv_path, num_rows=100):
+def run_genesis(blueprint_path, output_csv_path, num_rows=250):
     # 1. Load the blueprint txt/json file
     with open(blueprint_path, 'r') as file:
         blueprint = json.load(file)
@@ -104,3 +108,14 @@ def run_genesis(blueprint_path, output_csv_path, num_rows=100):
 # --- TEST IT ---
 # Point this to one of your 8 .txt files!
 # run_genesis(r"D:\DataDojo\Human_Blueprint.txt", "fake_human_data.csv", num_rows=50)
+
+folder_path = Path(r"D:\DataDojo\Skeletons")
+output_dir = Path(r"D:\DataDojo\Generated Datasets")
+
+output_dir.mkdir(parents=True, exist_ok=True)
+
+for index, file in enumerate(folder_path.glob("*.txt"), start=1):
+    output_filename = f"generated_dataset_{index}.csv"
+    output_csv_path = output_dir / output_filename
+    print(f"⚙️ Processing blueprint {index}: {file.name}...")
+    run_genesis(file, output_csv_path, num_rows=250)
