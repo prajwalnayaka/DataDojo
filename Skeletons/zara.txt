@@ -1,0 +1,50 @@
+[
+    {
+        "Product ID": "Numbers [110075:199631]"
+    },
+    {
+        "Product Position": "Categorical. Low cardinality"
+    },
+    {
+        "Promotion": "Binary yes/no"
+    },
+    {
+        "Product Category": "Categorical. Low cardinality"
+    },
+    {
+        "Seasonal": "Binary yes/no"
+    },
+    {
+        "Sales Volume": "Numbers [529:2989]"
+    },
+    {
+        "brand": "Categorical. Low cardinality"
+    },
+    {
+        "url": "Text/String. Very High Cardinality"
+    },
+    {
+        "sku": "Text/String. Very High Cardinality"
+    },
+    {
+        "name": "Text/String. Very High Cardinality"
+    },
+    {
+        "description": "Text/String. Very High Cardinality"
+    },
+    {
+        "price": "Numbers [7.99:439.0]"
+    },
+    {
+        "currency": "Categorical. Low cardinality"
+    },
+    {
+        "scraped_at": "Text/String. Very High Cardinality"
+    },
+    {
+        "terms": "Categorical. Low cardinality"
+    },
+    {
+        "section": "Categorical. Low cardinality"
+    }
+]
