@@ -69,6 +69,14 @@ def sabotage_level_3(df):
 # 2. THE CORRUPTION PIPELINE
 # ==========================================
 
+def create_file(df,output_filename,master_name):
+    output_dir=r"D:\DataDojo\Dirty_Datasets"
+    output_path = output_dir / output_filename
+    df.to_csv(output_path, index=False)
+    print(f"Ruined {master_name} -> {output_filename}")
+
+
+
 def run_ruiner(master_keys_folder, output_folder):
     input_dir = Path(master_keys_folder)
     output_dir = Path(output_folder)
@@ -79,23 +87,23 @@ def run_ruiner(master_keys_folder, output_folder):
 
     for file in master_files:
         df = pd.read_csv(file)
-        difficulty = random.choice([1, 2, 3])
-
-        if difficulty == 1:
-            dirty_df = sabotage_level_1(df)
-            diff_label = "Easy"
-        elif difficulty == 2:
-            _ ,dirty_df = sabotage_level_2(df)
-            diff_label = "Medium"
-        else:
-            dirty_df = sabotage_level_3(df)
-            diff_label = "Hard"
-
-        output_filename = file.name.replace("master_key", f"dirty_data_{diff_label}")
-        output_path = output_dir / output_filename
-
-        dirty_df.to_csv(output_path, index=False)
-        print(f"Ruined {file.name} -> {output_filename}")
+        master_name=file.name
+        for difficulty in [1,2,3]:
+            if difficulty == 1:
+                dirty_df = sabotage_level_1(df.copy())
+                diff_label = "Easy"
+                output_filename = file.name.replace("master_key", f"dirty_data_{diff_label}")
+                create_file(dirty_df,output_filename,master_name)
+            elif difficulty == 2:
+                _ ,dirty_df = sabotage_level_2(df.copy())
+                diff_label = "Medium"
+                output_filename = file.name.replace("master_key", f"dirty_data_{diff_label}")
+                create_file(dirty_df, output_filename, master_name)
+            else:
+                dirty_df = sabotage_level_3(df.copy())
+                diff_label = "Hard"
+                output_filename = file.name.replace("master_key", f"dirty_data_{diff_label}")
+                create_file(dirty_df, output_filename, master_name)
 
 
 if __name__ == "__main__":
