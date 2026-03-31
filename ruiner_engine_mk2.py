@@ -19,9 +19,15 @@ def sabotage_level_1(df):
     dirty_df = dirty_df.sample(frac=1.0).reset_index(drop=True)  # Shuffle
 
     # Sabotage B: Punch holes (NaNs) into 30% of a random column
-    target_col = random.choice(dirty_df.columns)
+    target_col_holes = random.choice(dirty_df.columns)
     mask = np.random.rand(len(dirty_df)) < 0.3 # Some pandas bs magic
-    dirty_df.loc[mask, target_col] = np.nan
+    dirty_df.loc[mask, target_col_holes] = np.nan
+
+    # Sabotage C: Completely empty a random column (all NaNs)
+    available_cols = [col for col in dirty_df.columns if col != target_col_holes]
+    if available_cols:
+        target_col_empty = random.choice(available_cols)
+        dirty_df[target_col_empty] = np.nan
 
     return dirty_df
 
@@ -71,7 +77,7 @@ def sabotage_level_3(df):
 
 def create_file(df,output_filename,master_name):
     output_dir=r"D:\DataDojo\Dirty_Datasets"
-    output_path = output_dir / output_filename
+    output_path = f"{output_dir}/{output_filename}"
     df.to_csv(output_path, index=False)
     print(f"Ruined {master_name} -> {output_filename}")
 
