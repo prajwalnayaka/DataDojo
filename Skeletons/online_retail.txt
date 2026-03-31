@@ -21,7 +21,7 @@
         "UnitPrice": "Numbers [-11062.06:38970.0]"
     },
     {
-        "CustomerID": "Numbers [nan:nan]"
+        "CustomerID": "Text/String. Very High Cardinality"
     },
     {
         "Country": "Text/String. Very High Cardinality"

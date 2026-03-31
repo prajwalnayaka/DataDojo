@@ -205,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+Master_Keys/
+Dirty_Datasets/
+Generated Datasets Mk1/
+Generated Datasets/
+
+rando.py

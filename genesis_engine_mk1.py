@@ -2,7 +2,11 @@ import json
 import random
 import csv
 import re
+from faker import Faker
 from pathlib import Path
+from datetime import date
+
+fake=Faker()
 
 
 # ==========================================
@@ -15,7 +19,7 @@ def generate_number(blueprint_string):
     and returns a random number in that range.
     """
     # Use regex to find all numbers in the string
-    bounds = re.findall(r"[-+]?\d*\.\d+|\d+", blueprint_string)
+    bounds = re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", blueprint_string)
 
     if len(bounds) >= 2:
         min_val = float(bounds[0])
@@ -61,21 +65,37 @@ def generate_row(blueprint):
     for column_dict in blueprint:
         # blueprint is a list of dicts: [{"Age": "Zero & Positive numbers [18-60]"}]
         for col_name, rule in column_dict.items():
-
-            if "Binary" in rule:
+            if re.search(r"binary",rule, flags=re.IGNORECASE):
                 fake_row[col_name] = generate_binary()
 
-            elif "Categorical" in rule:
+            elif re.search(r"country",col_name, flags=re.IGNORECASE):
+                fake_row[col_name]=fake.country()
+
+            elif re.search(r"date", col_name, flags=re.IGNORECASE):
+                oldest_date = date(2021, 1, 1)
+                fake_row[col_name]=fake.date_between(start_date=oldest_date, end_date='today')
+
+            elif re.search(r"customerid",col_name, flags=re.IGNORECASE):
+                fake_row[col_name]=fake.bothify(text='CUST-####-??')
+
+            elif "description" in col_name.lower() or "name" in col_name.lower():
+                fake_row[col_name] = fake.sentence(nb_words=3)[:-1]
+
+            elif re.search(r"charges",col_name, flags=re.IGNORECASE):
+                fake_row[col_name] = round(random.uniform(20.0, 8000.0), 2)
+
+            elif re.search(r"categorical",rule, flags=re.IGNORECASE):
                 fake_row[col_name] = generate_categorical(rule)
 
-            elif "Numbers" in rule or "integers" in rule:
-
+            elif re.search(r"numbers",rule, flags=re.IGNORECASE):
                 fake_row[col_name] = generate_number(rule)
-            elif "Text/String" in rule:
+
+            elif re.search(r"text",rule, flags=re.IGNORECASE):
                 fake_row[col_name] = f"UID-{random.randint(10000, 99999)}"
 
             else:
                 fake_row[col_name] = "UNKNOWN"
+
 
     return fake_row
 
@@ -105,9 +125,6 @@ def run_genesis(blueprint_path, output_csv_path, num_rows=250):
 
     print(f"✅ Genesis Complete: {num_rows} rows saved to {output_csv_path}")
 
-# --- TEST IT ---
-# Point this to one of your 8 .txt files!
-# run_genesis(r"D:\DataDojo\Human_Blueprint.txt", "fake_human_data.csv", num_rows=50)
 
 folder_path = Path(r"D:\DataDojo\Skeletons")
 output_dir = Path(r"D:\DataDojo\Generated Datasets")
