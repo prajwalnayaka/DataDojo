@@ -108,7 +108,7 @@ def generate_row(blueprint):
 # ==========================================
 
 
-def generate_mk2_dataset(skeletons_folder):
+def generate_mk3_dataframe(skeletons_folder):
     all_files = list(Path(skeletons_folder).glob("*.txt"))
     chosen_file = random.choice(all_files)
     data_memory=[]
