@@ -35,16 +35,16 @@ class ActionModel(BaseModel):
     mapping_dict: Optional[Dict[str, str]] = Field(default=None, description="Required for 'MAP_VALUES'. A dictionary of {old_value: new_value} to fix typos. e.g., {'new york': 'New York', 'NY': 'New York'} or {'option 1' : 'Option '}")
 
 
-    class ObservationModel(BaseModel):
-        """The strict schema the environment must output, allowing the agent to understand the dataset."""
+class ObservationModel(BaseModel):
+    """The strict schema the environment must output, allowing the agent to understand the dataset."""
 
-        schema: Dict[str,str] = Field(...,description="The datatypes of the dataset's columns. e.g., {'Price': 'object', 'Age': 'float64'}")
+    schema: Dict[str,str] = Field(...,description="The datatypes of the dataset's columns. e.g., {'Price': 'object', 'Age': 'float64'}")
 
-        NaNs:Dict[str,int] = Field(...,description="The NaN values in the dataset's columns. e.g., {'Transport': 38, 'Charges': 76}")
+    NaNs:Dict[str,int] = Field(...,description="The NaN values in the dataset's columns. e.g., {'Transport': 38, 'Charges': 76}")
 
-        sample:List[Dict[str:Any]] = Field(...,description="Sample of the dataset, each dictionary in the list is one row in the dataset. e.g., [{'Price': '$1,250', 'Age': 25}, {'Price': 400, 'Age': null}]")
+    sample:List[Dict[str:Any]] = Field(...,description="Sample of the dataset, each dictionary in the list is one row in the dataset. e.g., [{'Price': '$1,250', 'Age': 25}, {'Price': 400, 'Age': null}]")
 
-        EDA:Optional[Dict[str:Any]] = Field(default=None ,description="The results of GET_VALUE_COUNTS tool call. e.g., {'Option A':300, 'option A':230}")
+    EDA:Optional[Dict[str:Any]] = Field(default=None ,description="The results of GET_VALUE_COUNTS tool call. e.g., {'Option A':300, 'option A':230}")
 
 
 class RewardModel(BaseModel):
