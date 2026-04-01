@@ -47,6 +47,17 @@ class ObservationModel(BaseModel):
     EDA:Optional[Dict[str:Any]] = Field(default=None ,description="The results of GET_VALUE_COUNTS tool call. e.g., {'Option A':300, 'option A':230}")
 
 
+class StateModel(BaseModel):
+    """The schema for the environment's state."""
+    episode_id:str = Field(...,description="Episode ID.")
+
+    step_count:int = Field(...,description="Number of steps taken.")
+
+    difficulty:str = Field(...,description="Difficulty of the dataset and subsequently the environment.")
+
+    max_turns:int = Field(...,description="Max number of turns the agent has.")
+
+
 class RewardModel(BaseModel):
     """The strict schema of the reward provided by the environment to the agent."""
 
