@@ -3,10 +3,10 @@ import numpy as np
 import random
 from pathlib import Path
 
-
 # ==========================================
 # 1. THE SABOTAGE FUNCTIONS
 # ==========================================
+
 
 def sabotage_level_1(df):
     """Injects exact duplicates and missing values (NaNs)."""
@@ -20,7 +20,7 @@ def sabotage_level_1(df):
 
     # Sabotage B: Punch holes (NaNs) into 30% of a random column
     target_col_holes = random.choice(dirty_df.columns)
-    mask = np.random.rand(len(dirty_df)) < 0.3 # Some pandas bs magic
+    mask = np.random.rand(len(dirty_df)) < 0.3  # Some pandas bs magic
     dirty_df.loc[mask, target_col_holes] = np.nan
 
     # Sabotage C: Completely empty a random column (all NaNs)
@@ -36,17 +36,23 @@ def sabotage_level_2(df):
     """Corrupts numeric columns with strings and symbols."""
     dirty_df = sabotage_level_1(df)  # Level 2 includes Level 1 messes
 
-    numeric_cols = dirty_df.select_dtypes(include=['number']).columns.tolist()
-    target_col=""
+    numeric_cols = dirty_df.select_dtypes(include=["number"]).columns.tolist()
+    target_col = ""
 
     if numeric_cols:
         target_col = random.choice(numeric_cols)
         # Sabotage: Convert perfectly good floats into nasty currency strings (e.g., 4500.5 -> "$4,500.50")
         dirty_df[target_col] = dirty_df[target_col].apply(
-            lambda x: random.choice([
-                f"${x:,.2f}" if pd.notnull(x) else x,
-                f"{x:.2f}." if pd.notnull(x) else x
-            ]) if pd.notnull(x) else x
+            lambda x: (
+                random.choice(
+                    [
+                        f"${x:,.2f}" if pd.notnull(x) else x,
+                        f"{x:.2f}." if pd.notnull(x) else x,
+                    ]
+                )
+                if pd.notnull(x)
+                else x
+            )
         )
 
     return target_col, dirty_df
@@ -54,18 +60,23 @@ def sabotage_level_2(df):
 
 def sabotage_level_3(df):
     """Injects text inconsistencies."""
-    level_2_target_col, dirty_df = sabotage_level_2(df)  # Level 3 includes Level 1 & 2 messes
+    level_2_target_col, dirty_df = sabotage_level_2(
+        df
+    )  # Level 3 includes Level 1 & 2 messes
 
     # Find text/categorical columns
-    text_cols = dirty_df.select_dtypes(include=['object']).columns.tolist()
+    text_cols = dirty_df.select_dtypes(include=["object"]).columns.tolist()
 
     if text_cols:
         for target_col in text_cols:
             # Sabotage: Randomly change the casing of the text to break groupbys and value_counts
             if random.random() < 0.3 and target_col != level_2_target_col:
                 dirty_df[target_col] = dirty_df[target_col].apply(
-                    lambda x: str(x).upper() if random.random() > 0.7
-                    else (str(x).lower() if random.random() < 0.3 else x)
+                    lambda x: (
+                        str(x).upper()
+                        if random.random() > 0.7
+                        else (str(x).lower() if random.random() < 0.3 else x)
+                    )
                 )
 
     return dirty_df
@@ -75,12 +86,12 @@ def sabotage_level_3(df):
 # 2. THE CORRUPTION PIPELINE
 # ==========================================
 
-def create_file(df,output_filename,master_name):
-    output_dir=r"D:\DataDojo\Dirty_Datasets"
+
+def create_file(df, output_filename, master_name):
+    output_dir = r"D:\DataDojo\Dirty_Datasets"
     output_path = f"{output_dir}/{output_filename}"
     df.to_csv(output_path, index=False)
     print(f"Ruined {master_name} -> {output_filename}")
-
 
 
 def run_ruiner(master_keys_folder, output_folder):
@@ -90,25 +101,30 @@ def run_ruiner(master_keys_folder, output_folder):
 
     master_files = list(input_dir.glob("master_key_*.csv"))
 
-
     for file in master_files:
         df = pd.read_csv(file)
-        master_name=file.name
-        for difficulty in [1,2,3]:
+        master_name = file.name
+        for difficulty in [1, 2, 3]:
             if difficulty == 1:
                 dirty_df = sabotage_level_1(df.copy())
                 diff_label = "Easy"
-                output_filename = file.name.replace("master_key", f"dirty_data_{diff_label}")
-                create_file(dirty_df,output_filename,master_name)
+                output_filename = file.name.replace(
+                    "master_key", f"dirty_data_{diff_label}"
+                )
+                create_file(dirty_df, output_filename, master_name)
             elif difficulty == 2:
-                _ ,dirty_df = sabotage_level_2(df.copy())
+                _, dirty_df = sabotage_level_2(df.copy())
                 diff_label = "Medium"
-                output_filename = file.name.replace("master_key", f"dirty_data_{diff_label}")
+                output_filename = file.name.replace(
+                    "master_key", f"dirty_data_{diff_label}"
+                )
                 create_file(dirty_df, output_filename, master_name)
             else:
                 dirty_df = sabotage_level_3(df.copy())
                 diff_label = "Hard"
-                output_filename = file.name.replace("master_key", f"dirty_data_{diff_label}")
+                output_filename = file.name.replace(
+                    "master_key", f"dirty_data_{diff_label}"
+                )
                 create_file(dirty_df, output_filename, master_name)
 
 
