@@ -143,4 +143,4 @@ def generate_mk3_dataframe(skeletons_folder):
 
 if __name__ == "__main__":
     skeletons_dir = Path(r"D:\DataDojo\Skeletons")
-    generate_mk2_dataset(skeletons_dir)
+    generate_mk3_dataframe(skeletons_dir)
