@@ -92,18 +92,19 @@ def run_ruiner(master_df,difficulty):
 
     if difficulty == 'Easy':
         easy_dirty_df = sabotage_level_1(master_df.copy())
+        return easy_dirty_df
 
     elif difficulty == 'Medium':
         _, medium_dirty_df = sabotage_level_2(master_df.copy())
+        return medium_dirty_df
 
     else:
         hard_dirty_df = sabotage_level_3(master_df.copy())
-
-    return easy_dirty_df,medium_dirty_df,hard_dirty_df
+        return hard_dirty_df
 
 
 if __name__ == "__main__":
     skeletons_dir = Path(r"D:\DataDojo\Skeletons")
     master_df = generate_mk3_dataframe(skeletons_dir)
 
-    easy_dirty_df, medium_dirty_df, hard_dirty_df = run_ruiner(master_df, difficulty_level='Easy')
+    dirty_dataset = run_ruiner(master_df, difficulty='Easy')
