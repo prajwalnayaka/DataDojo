@@ -20,6 +20,8 @@ class DataCleaningEnv:
         self.skeletons_dir = Path(r"D:\DataDojo\Skeletons")
         self.episode_id=str(uuid.uuid4())
         self.turn_count = 0
+        self.initial_error_count=None
+        self.prev_error_count=None
         self.master_df = None
         self.current_df = None
         self.last_eda_result = None
@@ -28,7 +30,7 @@ class DataCleaningEnv:
         return ObservationModel(
             schema=self.current_df.dtypes.apply(lambda x: x.name).to_dict(),
             NaNs=self.current_df.isnull().sum().to_dict(),
-            sample=self.current_df.head(3).replace({np.nan: None}).to_dict(orient="records"),
+            sample=self.current_df.head(10).replace({np.nan: None}).to_dict(orient="records"),
             EDA=self.last_eda_result
         )
 
@@ -46,13 +48,32 @@ class DataCleaningEnv:
         self.master_df = generate_mk3_dataframe(self.skeletons_dir)
         self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
         self.turn_count = 0
+        self.initial_error_count = self._calculate_total_errors(self.current_df.copy())
+        self.prev_error_count = self._calculate_total_errors(self.current_df.copy())
         self.last_eda_result = None
 
         return self._get_observation()
 
+    def _calculate_total_errors(self, current_df: pd.DataFrame) -> int:
+        nans=current_df.isnull().sum().sum()
+        dupes=current_df.duplicated().sum()
+        common_cols = current_df.columns.intersection(self.master_df.columns)
+        mismatches= (current_df[common_cols] != self.master_df[common_cols]).sum().sum()
+        return nans+dupes+mismatches
+
+    def _is_delete_column_abuse(self,current_df: pd.DataFrame,dropped_column_name) -> int:
+        master_column_count=len(self.master_df.columns)
+        current_column_count=len(current_df.columns)
+        if (master_column_count-current_column_count) > 1 and current_df[dropped_column_name].isna().sum()<len(current_df[dropped_column_name]):
+            return True
+        else:
+            return False
+
     def step(self, action_input: ActionModel) -> Tuple[ObservationModel, RewardModel]:
         """Executes one cleaning action and returns the result."""
         self.turn_count += 1
+        current_error_count = self._calculate_total_errors(self.current_df.copy())
+        self.prev_error_count = current_error_count
         self.last_eda_result = None  # Clear old tool outputs
         info_msg = ""
 
@@ -60,6 +81,8 @@ class DataCleaningEnv:
         try:
             act = action_input.action
             col = action_input.column_name
+
+            current_df_copy=self.current_df.copy()
 
             if act == ActionType.DROP_COLUMN:
                 self.current_df.drop(columns=[col], inplace=True)
@@ -99,10 +122,12 @@ class DataCleaningEnv:
 
         # --- THE GRADER (Reward & Victory) ---
         # Binary check for now: Is it perfect?
-        # (You can make this more complex later by checking null counts)
         is_perfect = self.current_df.equals(self.master_df)
 
-        reward = 1.0 if is_perfect else 0.0
+        new_error_count = self._calculate_total_errors(self.current_df.copy())
+        error_count_reward = (self.prev_error_count - new_error_count)/self.initial_error_count
+        is_delete_column_abuse = self._is_delete_column_abuse(current_df_copy, action_input.column_name)
+        delete_column_abuse=-0.2 if is_delete_column_abuse else 0
         done = is_perfect or self.turn_count >= self.max_turns
 
         return self._get_observation(), RewardModel(score=reward, done=done, info={"message": info_msg})
