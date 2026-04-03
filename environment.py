@@ -77,7 +77,7 @@ class DataCleaningEnv:
         self.last_eda_result = None  # Clear old tool outputs
         info_msg = ""
 
-        # --- THE SWITCHBOARD (Execution) ---
+        # --- If-elif switchboard ---
         try:
             act = action_input.action
             col = action_input.column_name
@@ -120,14 +120,12 @@ class DataCleaningEnv:
         except Exception as e:
             info_msg = f"Error executing {action_input.action}: {str(e)}"
 
-        # --- THE GRADER (Reward & Victory) ---
-        # Binary check for now: Is it perfect?
-        is_perfect = self.current_df.equals(self.master_df)
+        # --- Rewards & Penalties ---
 
         new_error_count = self._calculate_total_errors(self.current_df.copy())
         error_count_reward = (self.prev_error_count - new_error_count)/self.initial_error_count
         is_delete_column_abuse = self._is_delete_column_abuse(current_df_copy, action_input.column_name)
         delete_column_abuse=-0.2 if is_delete_column_abuse else 0
-        done = is_perfect or self.turn_count >= self.max_turns
+        done = current_error_count == 0 or self.turn_count >= self.max_turns
 
         return self._get_observation(), RewardModel(score=reward, done=done, info={"message": info_msg})
