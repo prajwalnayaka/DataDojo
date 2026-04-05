@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import uuid
+from openenv.core.env_server.interfaces import Environment
 from pathlib import Path
 from typing import Tuple
 from models import ActionModel, ObservationModel, RewardModel, ActionType
@@ -8,7 +9,7 @@ from genesis_engine_mk3 import generate_mk3_dataframe
 from ruiner_engine_mk3 import run_ruiner
 
 
-class DataCleaningEnv:
+class DataCleaningEnv(Environment):
     """
     The main Arena. This class manages the state of the dataset and
     evaluates the LLM agent's cleaning attempts.
