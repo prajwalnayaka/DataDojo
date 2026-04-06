@@ -49,44 +49,58 @@ class DataCleaningEnv(Environment):
         self.master_df = generate_mk3_dataframe(self.skeletons_dir)
         self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
         self.turn_count = 0
-        self.initial_error_count = self._calculate_total_errors(self.current_df.copy())
-        self.prev_error_count = self._calculate_total_errors(self.current_df.copy())
+        self.initial_error_count,_ = self._calculate_total_errors(self.current_df.copy())
+        self.prev_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.last_eda_result = None
 
         return self._get_observation()
 
-    def _calculate_total_errors(self, current_df: pd.DataFrame) -> int:
+    def _calculate_total_errors(self, current_df: pd.DataFrame):
         nans=current_df.isnull().sum().sum()
         dupes=current_df.duplicated().sum()
-        common_cols = current_df.columns.intersection(self.master_df.columns)
-        mismatches= (current_df[common_cols] != self.master_df[common_cols]).sum().sum()
-        return nans+dupes+mismatches
+        min_rows = min(len(self.master_df), len(current_df))
+        current_df_trim=current_df.iloc[:min_rows].reset_index(drop=True)
+        master_df_trim=self.master_df.iloc[:min_rows].reset_index(drop=True)
+        common_cols_trim=current_df_trim.columns.intersection(master_df_trim.columns)
+        current_df_trim=current_df_trim[common_cols_trim]
+        master_df_trim=master_df_trim[common_cols_trim]
+        mismatches=((current_df_trim.astype(str)!=master_df_trim.astype(str)) & ~(current_df_trim.isna() & master_df_trim.isna())).sum().sum()
+        # ^ Compare as string because STRIP_CHAR will leave a column as str despite the fact that it may contain only ints/float. It has to be type casted.
+        breakdown="Reward for reducing the total number of errors in the dataset."
+        return nans+dupes+mismatches, breakdown
 
-    def _is_delete_column_abuse(self,current_df: pd.DataFrame,dropped_column_name) -> int:
-        master_column_count=len(self.master_df.columns)
-        current_column_count=len(current_df.columns)
-        if (master_column_count-current_column_count) > 1 and current_df[dropped_column_name].isna().sum()<len(current_df[dropped_column_name]):
-            return True
-        else:
-            return False
+    def _get_deletion_penalty(self, current_df: pd.DataFrame, col: str):
+        penalty = 0.0
+        master_cols = len(self.master_df.columns)
+        current_cols = len(current_df.columns)
+        if current_df[col].notna().any():
+            penalty -= 0.5
+        if current_cols < master_cols:
+            penalty -= 0.2
+        breakdown="Penalty for deleting a column. Harder penalties for deleting the wrong column."
+        return penalty, breakdown
 
     def step(self, action_input: ActionModel) -> Tuple[ObservationModel, RewardModel]:
         """Executes one cleaning action and returns the result."""
         self.turn_count += 1
-        current_error_count = self._calculate_total_errors(self.current_df.copy())
+        current_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.prev_error_count = current_error_count
         self.last_eda_result = None  # Clear old tool outputs
+        current_df_copy = self.current_df.copy()
         info_msg = ""
+        datatype_mismatch = 0
+        drop_col_flag=False
+        breakdown=[]
 
         # --- If-elif switchboard ---
         try:
             act = action_input.action
             col = action_input.column_name
 
-            current_df_copy=self.current_df.copy()
 
             if act == ActionType.DROP_COLUMN:
                 self.current_df.drop(columns=[col], inplace=True)
+                drop_col_flag = True
                 info_msg = f"Successfully dropped column: {col}"
 
             elif act == ActionType.DROP_DUPLICATES:
@@ -121,12 +135,31 @@ class DataCleaningEnv(Environment):
         except Exception as e:
             info_msg = f"Error executing {action_input.action}: {str(e)}"
 
+        col_diff=abs(len(self.master_df.columns) - len(self.current_df.columns))
+
         # --- Rewards & Penalties ---
 
-        new_error_count = self._calculate_total_errors(self.current_df.copy())
-        error_count_reward = (self.prev_error_count - new_error_count)/self.initial_error_count
-        is_delete_column_abuse = self._is_delete_column_abuse(current_df_copy, action_input.column_name)
-        delete_column_abuse=-0.2 if is_delete_column_abuse else 0
-        done = current_error_count == 0 or self.turn_count >= self.max_turns
+        if action_input.column_name: # Penalty if the datatypes of the column isn't the same as in master_df. Breakdown encourage the agent to type cast into the correct datatype
+            col = action_input.column_name
+            if col in self.current_df.columns:
+                if self.current_df[col].dtype != self.master_df[col].dtype: # Not current_df_copy as it doesn't reflect the changes that have been done
+                    datatype_mismatch = -0.2
+                    breakdown.append({"The datatypes of the selected column is not accurate, needs to be changed.":datatype_mismatch})
+        else:
+            datatype_mismatch = 0
 
-        return self._get_observation(), RewardModel(score=reward, done=done, info={"message": info_msg})
+        new_error_count, error_count_reward_breakdown = self._calculate_total_errors(self.current_df.copy()) # Not current_df_copy as it doesn't reflect the changes that have been just done
+        error_count_reward = (self.prev_error_count - new_error_count)/self.initial_error_count
+        breakdown.append({error_count_reward_breakdown:error_count_reward})
+
+        if drop_col_flag:
+            delete_column_abuse, delete_column_abuse_breakdown = self._get_deletion_penalty(current_df_copy, action_input.column_name) # current_copy_df coz we need to inspect the deleted column,
+            breakdown.append({delete_column_abuse_breakdown: delete_column_abuse})                                                     # which is no longer available in current_df_copy
+        else:
+            delete_column_abuse=0
+
+        reward=error_count_reward+datatype_mismatch+delete_column_abuse
+
+        done = new_error_count < 0.05 * self.initial_error_count or self.turn_count >= self.max_turns or col_diff>1
+
+        return self._get_observation(), RewardModel(score=reward, done=done, info={"message": info_msg}, breakdown=breakdown)
