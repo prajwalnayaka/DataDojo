@@ -14,11 +14,11 @@ class DataCleaningEnv(Environment):
     The main Arena. This class manages the state of the dataset and
     evaluates the LLM agent's cleaning attempts.
     """
-
+    SUPPORTS_CONCURRENT_SESSIONS = True
     def __init__(self, difficulty: str = "Easy", max_steps: int = 10):
         self.difficulty = difficulty
         self.max_steps = max_steps
-        self.skeletons_dir = Path(r"D:\DataDojo\Skeletons")
+        self.skeletons_dir = Path(r"D:\DataDojo\server\Skeletons")
         self.episode_id=str(uuid.uuid4())
         self.step_count = 0
         self.initial_error_count=None
@@ -29,7 +29,7 @@ class DataCleaningEnv(Environment):
 
     def _get_observation(self) -> ObservationModel:
         return ObservationModel(
-            schema=self.current_df.dtypes.apply(lambda x: x.name).to_dict(),
+            data_schema=self.current_df.dtypes.apply(lambda x: x.name).to_dict(),
             NaNs=self.current_df.isnull().sum().to_dict(),
             sample=self.current_df.head(10).replace({np.nan: None}).to_dict(orient="records"),
             EDA=self.last_eda_result
@@ -46,14 +46,21 @@ class DataCleaningEnv(Environment):
 
     def reset(self) -> ObservationModel:
         """Starts a new episode with a fresh, ruined dataset."""
-        self.master_df = generate_mk3_dataframe(self.skeletons_dir)
-        self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
-        self.step_count = 0
-        self.initial_error_count,_ = self._calculate_total_errors(self.current_df.copy())
-        self.prev_error_count,_ = self._calculate_total_errors(self.current_df.copy())
-        self.last_eda_result = None
+        try:
+            self.master_df = generate_mk3_dataframe(self.skeletons_dir)
+            self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
+            self.step_count = 0
+            self.initial_error_count,_ = self._calculate_total_errors(self.current_df.copy())
+            self.prev_error_count,_ = self._calculate_total_errors(self.current_df.copy())
+            self.last_eda_result = None
 
-        return self._get_observation()
+            return self._get_observation()
+
+        except Exception as e:
+            import traceback
+            print("!!!!!!!!!!!!!!! CRASH DETECTED !!!!!!!!!!!!!!")
+            traceback.print_exc()
+            raise e
 
     def _calculate_total_errors(self, current_df: pd.DataFrame):
         nans=current_df.isnull().sum().sum()
