@@ -30,7 +30,7 @@ class ActionModel(BaseModel):
 
     target_type: Optional[str] = Field(default=None, description="Required for 'TYPE_CAST'. E.g., 'float', 'int', 'string'.")
 
-    regex_pattern: Optional[str] = Field(default=None, description="Required for 'STRIP_CHAR'. The regex pattern to remove (e.g., r'[\\$\\,]').")
+    regex_pattern: Optional[str] = Field(default=None, description="Required for 'STRIP_CHAR'. The regex pattern to remove (e.g., r'[\.$\\,]').")
 
     mapping_dict: Optional[Dict[str, str]] = Field(default=None, description="Required for 'MAP_VALUES'. A dictionary of {old_value: new_value} to fix typos. e.g., {'new york': 'New York', 'NY': 'New York'} or {'option 1' : 'Option '}")
 
@@ -62,6 +62,9 @@ class RewardModel(BaseModel):
     """The strict schema of the reward provided by the environment to the agent."""
 
     score:float = Field(...)
+
     done:bool = Field(...)
-    info:Dict[str,Any] = Field(...,description="'Success: Dropped column 'Unnamed: 0' OR 'Error: Cannot cast '$1,250' to float directly. Use STRIP_CHAR first.'")
-    breakdown:Dict[float:str] = Field(...,description="Breakdown of the end reward, which reward and/or penalty corresponds to what actions.")
+
+    info:Dict[str,Any] = Field(...,description="'Success: Dropped column 'Unnamed: 0' OR 'Error: Cannot cast '$1,250' to float directly.'")
+
+    breakdown:List[Dict[str:float]] = Field(...,description="Breakdown of the end reward, what actions correspond to which rewards and/or penalties.")
