@@ -15,12 +15,12 @@ class DataCleaningEnv(Environment):
     evaluates the LLM agent's cleaning attempts.
     """
 
-    def __init__(self, difficulty: str = "Easy", max_turns: int = 10):
+    def __init__(self, difficulty: str = "Easy", max_steps: int = 10):
         self.difficulty = difficulty
-        self.max_turns = max_turns
+        self.max_steps = max_steps
         self.skeletons_dir = Path(r"D:\DataDojo\Skeletons")
         self.episode_id=str(uuid.uuid4())
-        self.turn_count = 0
+        self.step_count = 0
         self.initial_error_count=None
         self.prev_error_count=None
         self.master_df = None
@@ -39,16 +39,16 @@ class DataCleaningEnv(Environment):
         """Returns the current state of the environment."""
         return {
             "episode_id": self.episode_id,
-            "step_count": self.turn_count,
+            "step_count": self.step_count,
             "difficulty": self.difficulty,
-            "max_turns": self.max_turns
+            "max_steps": self.max_steps
         }
 
     def reset(self) -> ObservationModel:
         """Starts a new episode with a fresh, ruined dataset."""
         self.master_df = generate_mk3_dataframe(self.skeletons_dir)
         self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
-        self.turn_count = 0
+        self.step_count = 0
         self.initial_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.prev_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.last_eda_result = None
@@ -65,7 +65,7 @@ class DataCleaningEnv(Environment):
         current_df_trim=current_df_trim[common_cols_trim]
         master_df_trim=master_df_trim[common_cols_trim]
         mismatches=((current_df_trim.astype(str)!=master_df_trim.astype(str)) & ~(current_df_trim.isna() & master_df_trim.isna())).sum().sum()
-        # ^ Compare as string because STRIP_CHAR will leave a column as str despite the fact that it may contain only ints/float. It has to be type casted.
+        # ^ Compare as string because STRIP_CHAR will leave a column as str despite the fact that it now (after a perfect STRIP_CHAR ction) may contain only ints/floats. It has to be type casted.
         breakdown="Reward for reducing the total number of errors in the dataset."
         return nans+dupes+mismatches, breakdown
 
@@ -82,7 +82,7 @@ class DataCleaningEnv(Environment):
 
     def step(self, action_input: ActionModel) -> Tuple[ObservationModel, RewardModel]:
         """Executes one cleaning action and returns the result."""
-        self.turn_count += 1
+        self.step_count += 1
         current_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.prev_error_count = current_error_count
         self.last_eda_result = None  # Clear old tool outputs
@@ -160,6 +160,6 @@ class DataCleaningEnv(Environment):
 
         reward=error_count_reward+datatype_mismatch+delete_column_abuse
 
-        done = new_error_count < 0.05 * self.initial_error_count or self.turn_count >= self.max_turns or col_diff>1
+        done = new_error_count < 0.05 * self.initial_error_count or self.step_count >= self.max_steps or col_diff > 1
 
         return self._get_observation(), RewardModel(score=reward, done=done, info={"message": info_msg}, breakdown=breakdown)
