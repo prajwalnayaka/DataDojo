@@ -75,8 +75,8 @@ class DataCleaningEnv(Environment):
         current_cols = len(current_df.columns)
         if current_df[col].notna().any():
             penalty -= 0.5
-        if current_cols < master_cols:
-            penalty -= 0.2
+        if current_cols < master_cols: # Yes this applies an action penalty i.e, penalty for everytime the agent uses drop_col EXCEPT for its first use [current_df_copy before first drop_col will have the same number of cols as master]
+            penalty -= 0.2             # This encourages the agent to use that free drop_na on the correct empty column in its very first try.
         breakdown="Penalty for deleting a column. Harder penalties for deleting the wrong column."
         return penalty, breakdown
 
