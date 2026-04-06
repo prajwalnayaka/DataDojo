@@ -1,12 +1,17 @@
 import uvicorn
 import argparse
+import sys
+from pathlib import Path
 from openenv.core.env_server.http_server import create_app
+
+path = Path(__file__).resolve().parent.parent
+sys.path.append(str(path))
 
 try:
     from models import ActionModel, ObservationModel
     from environment import DataCleaningEnv
 except ModuleNotFoundError:
-    from .models import ActionModel, ObservationModel
+    from ..models import ActionModel, ObservationModel
     from .environment import DataCleaningEnv
 
 app = create_app(
