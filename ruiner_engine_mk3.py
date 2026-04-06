@@ -47,7 +47,7 @@ def sabotage_level_2(df):
             lambda x: (
                 random.choice(
                     [
-                        f"${x:,.2f}" if pd.notnull(x) else x,
+                        f"${x:,.2f}" if pd.notnull(x) else x, #I genuinely still haven't understood why I need to do 3 .notnull() checks
                         f"{x:.2f}." if pd.notnull(x) else x,
                     ]
                 )
