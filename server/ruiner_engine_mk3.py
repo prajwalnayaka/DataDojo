@@ -104,7 +104,7 @@ def run_ruiner(master_df,difficulty):
 
 
 if __name__ == "__main__":
-    skeletons_dir = Path(r"D:\DataDojo\Skeletons")
+    skeletons_dir = Path(r"Skeletons")
     master_df = generate_mk3_dataframe(skeletons_dir)
 
     dirty_dataset = run_ruiner(master_df, difficulty='Easy')
