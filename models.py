@@ -30,7 +30,7 @@ class ActionModel(BaseModel):
 
     target_type: Optional[str] = Field(default=None, description="Required for 'TYPE_CAST'. E.g., 'float', 'int', 'string'.")
 
-    regex_pattern: Optional[str] = Field(default=None, description="Required for 'STRIP_CHAR'. The regex pattern to remove (e.g., r'[\.$\\,]').")
+    regex_pattern: Optional[str] = Field(default=None, description="Required for 'STRIP_CHAR'. The regex pattern to remove (e.g., r'[\.$\,]').")
 
     mapping_dict: Optional[Dict[str, str]] = Field(default=None, description="Required for 'MAP_VALUES'. A dictionary of {old_value: new_value} to fix typos. e.g., {'new york': 'New York', 'NY': 'New York'} or {'option 1' : 'Option '}")
 
