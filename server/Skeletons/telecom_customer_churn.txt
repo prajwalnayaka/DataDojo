@@ -1,0 +1,116 @@
+[
+    {
+        "Customer ID": "Text/String. Very High Cardinality"
+    },
+    {
+        "Gender": "Categorical. Low cardinality"
+    },
+    {
+        "Age": "Numbers [19:80]"
+    },
+    {
+        "Married": "Binary yes/no"
+    },
+    {
+        "Number of Dependents": "Zero & Positive numbers. High cardinality. [0:9]"
+    },
+    {
+        "City": "Text/String. Very High Cardinality"
+    },
+    {
+        "Zip Code": "Numbers [90001:96150]"
+    },
+    {
+        "Latitude": "Numbers [32.555828:41.962127]"
+    },
+    {
+        "Longitude": "Numbers [-124.301372:-114.192901]"
+    },
+    {
+        "Number of Referrals": "Numbers [0:11]"
+    },
+    {
+        "Tenure in Months": "Numbers [1:72]"
+    },
+    {
+        "Offer": "Categorical. Low cardinality"
+    },
+    {
+        "Phone Service": "Binary yes/no"
+    },
+    {
+        "Avg Monthly Long Distance Charges": "Numbers [nan:nan]"
+    },
+    {
+        "Multiple Lines": "Binary yes/no"
+    },
+    {
+        "Internet Service": "Binary yes/no"
+    },
+    {
+        "Internet Type": "Categorical. Low cardinality"
+    },
+    {
+        "Avg Monthly GB Download": "Numbers [nan:nan]"
+    },
+    {
+        "Online Security": "Binary yes/no"
+    },
+    {
+        "Online Backup": "Binary yes/no"
+    },
+    {
+        "Device Protection Plan": "Binary yes/no"
+    },
+    {
+        "Premium Tech Support": "Binary yes/no"
+    },
+    {
+        "Streaming TV": "Binary yes/no"
+    },
+    {
+        "Streaming Movies": "Binary yes/no"
+    },
+    {
+        "Streaming Music": "Binary yes/no"
+    },
+    {
+        "Unlimited Data": "Binary yes/no"
+    },
+    {
+        "Contract": "Categorical. Low cardinality"
+    },
+    {
+        "Paperless Billing": "Binary yes/no"
+    },
+    {
+        "Payment Method": "Categorical. Low cardinality"
+    },
+    {
+        "Monthly Charge": "Numbers [-10.0:118.75]"
+    },
+    {
+        "Total Charges": "Numbers [18.8:8684.8]"
+    },
+    {
+        "Total Refunds": "Numbers [0.0:49.79]"
+    },
+    {
+        "Total Extra Data Charges": "Numbers [0:150]"
+    },
+    {
+        "Total Long Distance Charges": "Numbers [0.0:3564.72]"
+    },
+    {
+        "Total Revenue": "Numbers [21.36:11979.34]"
+    },
+    {
+        "Customer Status": "Categorical. Low cardinality"
+    },
+    {
+        "Churn Category": "Categorical. Low cardinality"
+    },
+    {
+        "Churn Reason": "Text/String. Very High Cardinality"
+    }
+]

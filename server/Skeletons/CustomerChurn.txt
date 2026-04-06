@@ -1,0 +1,65 @@
+[
+    {
+        "LoyaltyID": "Numbers [100346:999912]"
+    },
+    {
+        "Customer ID": "Text/String. Very High Cardinality"
+    },
+    {
+        "Senior Citizen": "Binary yes/no"
+    },
+    {
+        "Partner": "Binary yes/no"
+    },
+    {
+        "Dependents": "Binary yes/no"
+    },
+    {
+        "Tenure": "Numbers [0:72]"
+    },
+    {
+        "Phone Service": "Binary yes/no"
+    },
+    {
+        "Multiple Lines": "Categorical. Low cardinality"
+    },
+    {
+        "Internet Service": "Categorical. Low cardinality"
+    },
+    {
+        "Online Security": "Categorical. Low cardinality"
+    },
+    {
+        "Online Backup": "Categorical. Low cardinality"
+    },
+    {
+        "Device Protection": "Categorical. Low cardinality"
+    },
+    {
+        "Tech Support": "Categorical. Low cardinality"
+    },
+    {
+        "Streaming TV": "Categorical. Low cardinality"
+    },
+    {
+        "Streaming Movies": "Categorical. Low cardinality"
+    },
+    {
+        "Contract": "Categorical. Low cardinality"
+    },
+    {
+        "Paperless Billing": "Binary yes/no"
+    },
+    {
+        "Payment Method": "Categorical. Low cardinality"
+    },
+    {
+        "Monthly Charges": "Numbers [18.25:118.75]"
+    },
+    {
+        "Total Charges": "Text/String. Very High Cardinality"
+    },
+    {
+        "Churn": "Binary yes/no"
+    }
+]

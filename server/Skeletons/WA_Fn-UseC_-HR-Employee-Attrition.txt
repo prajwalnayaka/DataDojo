@@ -1,0 +1,107 @@
+[
+    {
+        "Age": "Zero & Positive numbers [18:60]"
+    },
+    {
+        "Attrition": "Binary yes/no"
+    },
+    {
+        "BusinessTravel": "Categorical. Low cardinality"
+    },
+    {
+        "DailyRate": "Zero & Positive numbers [102:1499]"
+    },
+    {
+        "Department": "Categorical. Low cardinality"
+    },
+    {
+        "DistanceFromHome": "Zero & Positive numbers [1:29]"
+    },
+    {
+        "Education": "Zero & Positive numbers. Low cardinality. [1:5]"
+    },
+    {
+        "EducationField": "Categorical. High cardinality"
+    },
+    {
+        "EmployeeCount": "Zero & Positive numbers. Low cardinality. [1:1]"
+    },
+    {
+        "EmployeeNumber": "Zero & Positive numbers [1:2068]"
+    },
+    {
+        "EnvironmentSatisfaction": "Zero & Positive numbers. Low cardinality. [1:4]"
+    },
+    {
+        "Gender": "Categorical. Low cardinality"
+    },
+    {
+        "HourlyRate": "Zero & Positive numbers [30:100]"
+    },
+    {
+        "JobInvolvement": "Zero & Positive numbers. Low cardinality. [1:4]"
+    },
+    {
+        "JobLevel": "Zero & Positive numbers. Low cardinality. [1:5]"
+    },
+    {
+        "JobRole": "Categorical. High cardinality"
+    },
+    {
+        "JobSatisfaction": "Zero & Positive numbers. Low cardinality. [1:4]"
+    },
+    {
+        "MaritalStatus": "Categorical. Low cardinality"
+    },
+    {
+        "MonthlyIncome": "Zero & Positive numbers [1009:19999]"
+    },
+    {
+        "MonthlyRate": "Zero & Positive numbers [2094:26999]"
+    },
+    {
+        "NumCompaniesWorked": "Zero & Positive numbers. High cardinality. [0:9]"
+    },
+    {
+        "Over18": "Categorical. Low cardinality"
+    },
+    {
+        "OverTime": "Binary yes/no"
+    },
+    {
+        "PercentSalaryHike": "Zero & Positive numbers [11:25]"
+    },
+    {
+        "PerformanceRating": "Zero & Positive numbers. Low cardinality. [3:4]"
+    },
+    {
+        "RelationshipSatisfaction": "Zero & Positive numbers. Low cardinality. [1:4]"
+    },
+    {
+        "StandardHours": "Zero & Positive numbers. Low cardinality. [80:80]"
+    },
+    {
+        "StockOptionLevel": "Zero & Positive numbers. Low cardinality. [0:3]"
+    },
+    {
+        "TotalWorkingYears": "Zero & Positive numbers [0:40]"
+    },
+    {
+        "TrainingTimesLastYear": "Zero & Positive numbers. High cardinality. [0:6]"
+    },
+    {
+        "WorkLifeBalance": "Zero & Positive numbers. Low cardinality. [1:4]"
+    },
+    {
+        "YearsAtCompany": "Zero & Positive numbers [0:40]"
+    },
+    {
+        "YearsInCurrentRole": "Zero & Positive numbers [0:18]"
+    },
+    {
+        "YearsSinceLastPromotion": "Zero & Positive numbers [0:15]"
+    },
+    {
+        "YearsWithCurrManager": "Zero & Positive numbers [0:17]"
+    }
+]
