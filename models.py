@@ -38,13 +38,13 @@ class ActionModel(BaseModel):
 class ObservationModel(BaseModel):
     """The strict schema the environment must output, allowing the agent to understand the dataset."""
 
-    schema: Dict[str,str] = Field(...,description="The datatypes of the dataset's columns. e.g., {'Price': 'object', 'Age': 'float64'}")
+    data_schema: Dict[str,str] = Field(...,description="The datatypes of the dataset's columns. e.g., {'Price': 'object', 'Age': 'float64'}")
 
     NaNs:Dict[str,int] = Field(...,description="The NaN values in the dataset's columns. e.g., {'Transport': 38, 'Charges': 76}")
 
-    sample:List[Dict[str:Any]] = Field(...,description="Sample of the dataset, each dictionary in the list is one row in the dataset. e.g., [{'Price': '$1,250', 'Age': 25}, {'Price': 400, 'Age': null}]")
+    sample:List[Dict[str,Any]] = Field(...,description="Sample of the dataset, each dictionary in the list is one row in the dataset. e.g., [{'Price': '$1,250', 'Age': 25}, {'Price': 400, 'Age': null}]")
 
-    EDA:Optional[Dict[str:Any]] = Field(default=None ,description="The results of GET_VALUE_COUNTS tool call. e.g., {'Option A':300, 'option A':230}")
+    EDA:Optional[Dict[str,Any]] = Field(default=None ,description="The results of GET_VALUE_COUNTS tool call. e.g., {'Option A':300, 'option A':230}")
 
 
 class StateModel(BaseModel):
@@ -67,4 +67,4 @@ class RewardModel(BaseModel):
 
     info:Dict[str,Any] = Field(...,description="'Success: Dropped column 'Unnamed: 0' OR 'Error: Cannot cast '$1,250' to float directly.'")
 
-    breakdown:List[Dict[str:float]] = Field(...,description="Breakdown of the end reward, what actions correspond to which rewards and/or penalties.")
+    breakdown:List[Dict[str,float]] = Field(...,description="Breakdown of the end reward, what actions correspond to which rewards and/or penalties.")
