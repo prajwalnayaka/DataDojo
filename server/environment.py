@@ -186,7 +186,7 @@ class DataCleaningEnv(Environment):
         new_error_count, error_count_reward_breakdown = self._calculate_total_errors(self.current_df.copy()) # Not current_df_copy as it doesn't reflect the changes that have been just done
         REWARD_MULTIPLIER = 5
         error_count_reward = ((self.prev_error_count - new_error_count)/self.initial_error_count)*REWARD_MULTIPLIER
-        self.breakdown.append({error_count_reward_breakdown:error_count_reward})
+        self.breakdown.append({error_count_reward_breakdown:round(error_count_reward,3)})
 
         if drop_col_flag:
             delete_column_abuse, delete_column_abuse_breakdown = self._get_deletion_penalty(current_df_copy, action_input.column_name) # current_copy_df coz we need to inspect the deleted column,
