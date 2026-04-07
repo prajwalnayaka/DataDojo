@@ -69,7 +69,9 @@ class StateModel(State):
 class RewardModel(BaseModel):
     """The strict schema of the reward provided by the environment to the agent."""
 
-    score:float = Field(...)
+    observation: ObservationModel = Field(...)
+
+    reward:float = Field(...)
 
     done:bool = Field(...)
 
