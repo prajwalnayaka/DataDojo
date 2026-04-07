@@ -163,7 +163,7 @@ class DataCleaningEnv(Environment):
 
         if drop_col_flag:
             delete_column_abuse, delete_column_abuse_breakdown = self._get_deletion_penalty(current_df_copy, action_input.column_name) # current_copy_df coz we need to inspect the deleted column,
-            self.breakdown.append({delete_column_abuse_breakdown: delete_column_abuse})                                                     # which is no longer available in current_df_copy
+            self.breakdown.append({delete_column_abuse_breakdown: delete_column_abuse})                                                # which is no longer available in current_df_copy
         else:
             delete_column_abuse=0
 
