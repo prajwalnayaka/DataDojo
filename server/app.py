@@ -3,6 +3,7 @@ import argparse
 import sys
 from pathlib import Path
 from openenv.core.env_server.http_server import create_app
+from openenv.core.env_server import create_web_interface_app
 
 path = Path(__file__).resolve().parent.parent
 sys.path.append(str(path))
@@ -14,13 +15,22 @@ except ModuleNotFoundError:
     from ..models import ActionModel, ObservationModel
     from .environment import DataCleaningEnv
 
-app = create_app(
+# app = create_app(
+#     DataCleaningEnv,
+#     ActionModel,
+#     ObservationModel,
+#     env_name="DataDojo",
+#     max_concurrent_envs=5
+# )
+
+
+app = create_web_interface_app(
     DataCleaningEnv,
     ActionModel,
     ObservationModel,
-    env_name="DataDojo",
-    max_concurrent_envs=5
 )
+
+
 
 def main(host:str="0.0.0.0", port:int=8080):
     uvicorn.run(app, host=host, port=port)
