@@ -21,17 +21,25 @@ class DataCleaningEnv(Environment):
         self.skeletons_dir = Path(r"D:\DataDojo\server\Skeletons")
         self.episode_id=str(uuid.uuid4())
         self.step_count = 0
+        self.reward=0.0
+        self.done = False
+        self.breakdown = []
+        self.info=""
         self.initial_error_count=None
         self.prev_error_count=None
         self.master_df = None
         self.current_df = None
         self.last_eda_result = None
 
-    def _get_observation(self) -> ObservationModel:
+    def _get_observation(self)-> ObservationModel:
         return ObservationModel(
+            done=self.done,
+            reward=self.reward,
+            metadata={"breakdown":self.breakdown},
             data_schema=self.current_df.dtypes.apply(lambda x: x.name).to_dict(),
-            NaNs=self.current_df.isnull().sum().to_dict(),
+            NaNs={k: int(v) for k, v in self.current_df.isnull().sum().to_dict().items()},
             sample=self.current_df.head(10).replace({np.nan: None}).to_dict(orient="records"),
+            info=self.info,
             EDA=self.last_eda_result
         )
 
@@ -46,21 +54,15 @@ class DataCleaningEnv(Environment):
 
     def reset(self) -> ObservationModel:
         """Starts a new episode with a fresh, ruined dataset."""
-        try:
-            self.master_df = generate_mk3_dataframe(self.skeletons_dir)
-            self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
-            self.step_count = 0
-            self.initial_error_count,_ = self._calculate_total_errors(self.current_df.copy())
-            self.prev_error_count,_ = self._calculate_total_errors(self.current_df.copy())
-            self.last_eda_result = None
+        self.master_df = generate_mk3_dataframe(self.skeletons_dir)
+        self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
+        self.step_count = 0
+        self.initial_error_count,_ = self._calculate_total_errors(self.current_df.copy())
+        self.prev_error_count,_ = self._calculate_total_errors(self.current_df.copy())
+        self.last_eda_result = None
 
-            return self._get_observation()
+        return self._get_observation()
 
-        except Exception as e:
-            import traceback
-            print("!!!!!!!!!!!!!!! CRASH DETECTED !!!!!!!!!!!!!!")
-            traceback.print_exc()
-            raise e
 
     def _calculate_total_errors(self, current_df: pd.DataFrame):
         nans=current_df.isnull().sum().sum()
@@ -93,11 +95,11 @@ class DataCleaningEnv(Environment):
         current_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.prev_error_count = current_error_count
         self.last_eda_result = None  # Clear old tool outputs
+        self.breakdown = [] # Clear previous breakdowns
+        self.info = "" # Clear previous info messages
         current_df_copy = self.current_df.copy()
-        info_msg = ""
         datatype_mismatch = 0
         drop_col_flag=False
-        breakdown=[]
 
         # --- If-elif switchboard ---
         try:
@@ -108,39 +110,39 @@ class DataCleaningEnv(Environment):
             if act == ActionType.DROP_COLUMN:
                 self.current_df.drop(columns=[col], inplace=True)
                 drop_col_flag = True
-                info_msg = f"Successfully dropped column: {col}"
+                self.info = f"Successfully dropped column: {col}"
 
             elif act == ActionType.DROP_DUPLICATES:
                 self.current_df.drop_duplicates(inplace=True)
-                info_msg = "Successfully removed duplicate rows."
+                self.info = "Successfully removed duplicate rows."
 
             elif act == ActionType.FILL_NA:
                 val = action_input.fill_value
                 self.current_df[col] = self.current_df[col].fillna(val)
-                info_msg = f"Filled NaNs in {col} with {val}"
+                self.info = f"Filled NaNs in {col} with {val}"
 
             elif act == ActionType.STRIP_CHAR:
                 pattern = action_input.regex_pattern
                 self.current_df[col] = self.current_df[col].astype(str).str.replace(pattern, "", regex=True)
-                info_msg = f"Stripped characters from {col} using pattern: {pattern}"
+                self.info = f"Stripped characters from {col} using pattern: {pattern}"
 
             elif act == ActionType.TYPE_CAST:
                 target = action_input.target_type
                 self.current_df[col] = self.current_df[col].astype(target)
-                info_msg = f"Cast {col} to {target}"
+                self.info = f"Cast {col} to {target}"
 
             elif act == ActionType.GET_VALUE_COUNTS:
                 # This doesn't change the DF, just provides info
                 self.last_eda_result = self.current_df[col].value_counts().to_dict()
-                info_msg = f"Retrieved value counts for {col}"
+                self.info = f"Retrieved value counts for {col}"
 
             elif act == ActionType.MAP_VALUES:
                 mapping = action_input.mapping_dict
                 self.current_df[col] = self.current_df[col].replace(mapping)
-                info_msg = f"Mapped values in {col} using provided dictionary."
+                self.info = f"Mapped values in {col} using provided dictionary."
 
         except Exception as e:
-            info_msg = f"Error executing {action_input.action}: {str(e)}"
+            self.info = f"Error executing {action_input.action}: {str(e)}"
 
         col_diff=abs(len(self.master_df.columns) - len(self.current_df.columns))
 
@@ -151,22 +153,30 @@ class DataCleaningEnv(Environment):
             if col in self.current_df.columns:
                 if self.current_df[col].dtype != self.master_df[col].dtype: # Not current_df_copy as it doesn't reflect the changes that have been done
                     datatype_mismatch = -0.2
-                    breakdown.append({"The datatypes of the selected column is not accurate, needs to be changed.":datatype_mismatch})
+                    self.breakdown.append({"The datatypes of the selected column is not accurate, needs to be changed.":datatype_mismatch})
         else:
             datatype_mismatch = 0
 
         new_error_count, error_count_reward_breakdown = self._calculate_total_errors(self.current_df.copy()) # Not current_df_copy as it doesn't reflect the changes that have been just done
         error_count_reward = (self.prev_error_count - new_error_count)/self.initial_error_count
-        breakdown.append({error_count_reward_breakdown:error_count_reward})
+        self.breakdown.append({error_count_reward_breakdown:error_count_reward})
 
         if drop_col_flag:
             delete_column_abuse, delete_column_abuse_breakdown = self._get_deletion_penalty(current_df_copy, action_input.column_name) # current_copy_df coz we need to inspect the deleted column,
-            breakdown.append({delete_column_abuse_breakdown: delete_column_abuse})                                                     # which is no longer available in current_df_copy
+            self.breakdown.append({delete_column_abuse_breakdown: delete_column_abuse})                                                     # which is no longer available in current_df_copy
         else:
             delete_column_abuse=0
 
-        reward=error_count_reward+datatype_mismatch+delete_column_abuse
+        self.reward=error_count_reward+datatype_mismatch+delete_column_abuse
 
-        done = new_error_count < 0.05 * self.initial_error_count or self.step_count >= self.max_steps or col_diff > 1
+        self.done = new_error_count < 0.05 * self.initial_error_count or self.step_count >= self.max_steps or col_diff > 1
 
-        return self._get_observation(), RewardModel(score=reward, done=done, info={"message": info_msg}, breakdown=breakdown)
+        obs = self._get_observation()
+        rew = RewardModel(
+            score=float(self.reward),
+            done=bool(self.done),
+            info=self.info,
+            breakdown=self.breakdown
+        )
+
+        return obs, rew

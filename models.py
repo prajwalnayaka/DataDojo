@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel, Field
-from openenv.core.env_server.interfaces import Action, Observation
+from openenv.core.env_server.interfaces import Action, Observation, State
 from typing import Optional, Dict, Any, List
 
 
@@ -20,7 +20,7 @@ class ActionType(str, Enum):
     MAP_VALUES = "MAP_VALUES"
 
 
-class ActionModel(BaseModel):
+class ActionModel(Action):
     """The strict schema the agent must output to interact with the dataset."""
 
     action: ActionType = Field(..., description="The specific cleaning or EDA tool to execute.")
@@ -36,8 +36,13 @@ class ActionModel(BaseModel):
     mapping_dict: Optional[Dict[str, str]] = Field(default=None, description="Required for 'MAP_VALUES'. A dictionary of {old_value: new_value} to fix typos. e.g., {'new york': 'New York', 'NY': 'New York'} or {'option 1' : 'Option '}")
 
 
-class ObservationModel(BaseModel):
+class ObservationModel(Observation):
     """The strict schema the environment must output, allowing the agent to understand the dataset."""
+    done: bool = Field(...)
+
+    reward: float = Field(...)
+
+    metadata: Dict[Any, Any] = Field(...)
 
     data_schema: Dict[str,str] = Field(...,description="The datatypes of the dataset's columns. e.g., {'Price': 'object', 'Age': 'float64'}")
 
@@ -45,10 +50,12 @@ class ObservationModel(BaseModel):
 
     sample:List[Dict[str,Any]] = Field(...,description="Sample of the dataset, each dictionary in the list is one row in the dataset. e.g., [{'Price': '$1,250', 'Age': 25}, {'Price': 400, 'Age': null}]")
 
+    info: str = Field(...,description="'Success: Dropped column 'Unnamed: 0' OR 'Error: Cannot cast '$1,250' to float directly.'")
+
     EDA:Optional[Dict[str,Any]] = Field(default=None ,description="The results of GET_VALUE_COUNTS tool call. e.g., {'Option A':300, 'option A':230}")
 
 
-class StateModel(BaseModel):
+class StateModel(State):
     """The schema for the environment's state."""
     episode_id:str = Field(...,description="Episode ID.")
 
@@ -66,6 +73,6 @@ class RewardModel(BaseModel):
 
     done:bool = Field(...)
 
-    info:Dict[str,Any] = Field(...,description="'Success: Dropped column 'Unnamed: 0' OR 'Error: Cannot cast '$1,250' to float directly.'")
+    info:str = Field(...,description="'Success: Dropped column 'Unnamed: 0' OR 'Error: Cannot cast '$1,250' to float directly.'")
 
     breakdown:List[Dict[str,float]] = Field(...,description="Breakdown of the end reward, what actions correspond to which rewards and/or penalties.")
