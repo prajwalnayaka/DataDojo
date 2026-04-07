@@ -33,13 +33,22 @@ class DataCleaningEnv(Environment):
         self.last_eda_result = None
 
     def _get_observation(self)-> ObservationModel:
+        clean_sample = (self.current_df.head(10).astype(object).where(self.current_df.head(10).notnull(), None))
+        # Timestamp/Date objects to strings
+        processed_records = []
+        for record in clean_sample.to_dict(orient="records"):
+            new_record = {
+                k: (v.isoformat() if hasattr(v, 'isoformat') else v)
+                for k, v in record.items()
+            }
+            processed_records.append(new_record)
         return ObservationModel(
             done=self.done,
             reward=self.reward,
             metadata={"breakdown":self.breakdown},
             data_schema=self.current_df.dtypes.apply(lambda x: x.name).to_dict(),
             NaNs={k: int(v) for k, v in self.current_df.isnull().sum().to_dict().items()},
-            sample=self.current_df.head(10).replace({np.nan: None}).to_dict(orient="records"),
+            sample=processed_records,
             info=self.info,
             EDA=self.last_eda_result
         )
@@ -92,7 +101,7 @@ class DataCleaningEnv(Environment):
         breakdown="Penalty for deleting a column. Harder penalties for deleting the wrong column."
         return penalty, breakdown
 
-    def step(self, action_input: ActionModel) -> Tuple[ObservationModel, RewardModel]:
+    def step(self, action_input: ActionModel) -> RewardModel:
         """Executes one cleaning action and returns the result."""
         print(f"DEBUG: Stepping Env ID: {self.episode_id}")
         self.step_count += 1
@@ -175,7 +184,8 @@ class DataCleaningEnv(Environment):
             datatype_mismatch = 0
 
         new_error_count, error_count_reward_breakdown = self._calculate_total_errors(self.current_df.copy()) # Not current_df_copy as it doesn't reflect the changes that have been just done
-        error_count_reward = (self.prev_error_count - new_error_count)/self.initial_error_count
+        REWARD_MULTIPLIER = 10
+        error_count_reward = ((self.prev_error_count - new_error_count)/self.initial_error_count)*REWARD_MULTIPLIER
         self.breakdown.append({error_count_reward_breakdown:error_count_reward})
 
         if drop_col_flag:
@@ -184,17 +194,18 @@ class DataCleaningEnv(Environment):
         else:
             delete_column_abuse=0
 
-        self.reward=error_count_reward+datatype_mismatch+delete_column_abuse
+        self.reward=round(float(np.tanh(error_count_reward+datatype_mismatch+delete_column_abuse)),3) # Normalize between -1.0 & +1.0
 
         self.done = new_error_count < 0.05 * self.initial_error_count or self.step_count >= self.max_steps or col_diff > 1
         # If current dataset's error is less than 5% of what the model started off with OR if current step is greater than max allowed steeps OR difference in columns of current dataset and master dataset is more than 1
 
         obs = self._get_observation()
         rew = RewardModel(
-            score=float(self.reward),
+            observation=obs,
+            reward=float(self.reward),
             done=bool(self.done),
             info=self.info,
             breakdown=self.breakdown
         )
 
-        return obs, rew
+        return rew
