@@ -2,7 +2,6 @@ import uvicorn
 import argparse
 import sys
 from pathlib import Path
-from openenv.core.env_server.http_server import create_app
 from openenv.core.env_server import create_web_interface_app
 
 path = Path(__file__).resolve().parent.parent
