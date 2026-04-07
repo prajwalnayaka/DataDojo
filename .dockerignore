@@ -1,0 +1,24 @@
+# Ignore local environments
+venv/
+.env
+
+# Ignore Python "trash" files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore version control
+.git/
+.gitignore
+
+# Ignore IDE
+.vscode/
+.idea/
+
+rando.py
+server/test_app.py
+*.zip
+Twins/
+Datasets/
+Extra/
