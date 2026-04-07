@@ -63,7 +63,7 @@ class StateModel(State):
 
     difficulty:str = Field(...,description="Difficulty of the dataset and subsequently the environment.")
 
-    max_turns:int = Field(...,description="Max number of turns the agent has.")
+    max_steps:int = Field(...,description="Max number of turns the agent has.")
 
 
 class RewardModel(BaseModel):
