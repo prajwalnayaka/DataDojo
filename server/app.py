@@ -15,14 +15,6 @@ except ModuleNotFoundError:
     from ..models import ActionModel, ObservationModel
     from .environment import DataCleaningEnv
 
-# app = create_app(
-#     DataCleaningEnv,
-#     ActionModel,
-#     ObservationModel,
-#     env_name="DataDojo",
-#     max_concurrent_envs=5
-# )
-
 
 app = create_web_interface_app(
     DataCleaningEnv,
