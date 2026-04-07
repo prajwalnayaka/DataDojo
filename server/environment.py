@@ -4,7 +4,7 @@ import uuid
 from openenv.core.env_server.interfaces import Environment
 from pathlib import Path
 from typing import Tuple
-from models import ActionModel, ObservationModel, RewardModel, ActionType
+from models import ActionModel, ObservationModel, RewardModel, StateModel, ActionType
 from genesis_engine_mk3 import generate_mk3_dataframe
 from ruiner_engine_mk3 import run_ruiner
 
@@ -15,6 +15,7 @@ class DataCleaningEnv(Environment):
     evaluates the LLM agent's cleaning attempts.
     """
     SUPPORTS_CONCURRENT_SESSIONS = True
+    ENABLE_WEB_INTERFACE = True
     def __init__(self, difficulty: str = "Easy", max_steps: int = 10):
         self.difficulty = difficulty
         self.max_steps = max_steps
@@ -43,14 +44,15 @@ class DataCleaningEnv(Environment):
             EDA=self.last_eda_result
         )
 
-    def state(self) -> dict:
+    @property
+    def state(self) -> StateModel:
         """Returns the current state of the environment."""
-        return {
-            "episode_id": self.episode_id,
-            "step_count": self.step_count,
-            "difficulty": self.difficulty,
-            "max_steps": self.max_steps
-        }
+        return StateModel(
+        episode_id= self.episode_id,
+        step_count= self.step_count,
+        difficulty= self.difficulty,
+        max_steps= self.max_steps
+        )
 
     def reset(self) -> ObservationModel:
         """Starts a new episode with a fresh, ruined dataset."""
@@ -60,6 +62,7 @@ class DataCleaningEnv(Environment):
         self.initial_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.prev_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.last_eda_result = None
+        print(f"DEBUG: Resetting Env ID: {self.episode_id}")
 
         return self._get_observation()
 
@@ -91,13 +94,14 @@ class DataCleaningEnv(Environment):
 
     def step(self, action_input: ActionModel) -> Tuple[ObservationModel, RewardModel]:
         """Executes one cleaning action and returns the result."""
+        print(f"DEBUG: Stepping Env ID: {self.episode_id}")
         self.step_count += 1
-        current_error_count,_ = self._calculate_total_errors(self.current_df.copy())
+        current_df_copy = self.current_df.copy()
+        current_error_count,_ = self._calculate_total_errors(current_df_copy)
         self.prev_error_count = current_error_count
         self.last_eda_result = None  # Clear old tool outputs
         self.breakdown = [] # Clear previous breakdowns
         self.info = "" # Clear previous info messages
-        current_df_copy = self.current_df.copy()
         datatype_mismatch = 0
         drop_col_flag=False
 
@@ -118,8 +122,17 @@ class DataCleaningEnv(Environment):
 
             elif act == ActionType.FILL_NA:
                 val = action_input.fill_value
-                self.current_df[col] = self.current_df[col].fillna(val)
-                self.info = f"Filled NaNs in {col} with {val}"
+                if val == "mean":
+                    fill = self.current_df[col].mean()
+                elif val == "median":
+                    fill = self.current_df[col].median()
+                elif val == "mode":
+                    mode_result = self.current_df[col].mode()
+                    fill = mode_result.iloc[0] if not mode_result.empty else np.nan
+                else:
+                    fill = val
+                self.current_df[col] = self.current_df[col].fillna(fill)
+                self.info = f"Filled NaNs in {col} with {val} ({fill})"
 
             elif act == ActionType.STRIP_CHAR:
                 pattern = action_input.regex_pattern
@@ -140,6 +153,10 @@ class DataCleaningEnv(Environment):
                 mapping = action_input.mapping_dict
                 self.current_df[col] = self.current_df[col].replace(mapping)
                 self.info = f"Mapped values in {col} using provided dictionary."
+
+            elif act == ActionType.LOWERCASE:
+                self.current_df[col] = self.current_df[col].astype(str).str.lower().str.strip()
+                self.info = f"Lowercased all values in column: {col}"
 
         except Exception as e:
             self.info = f"Error executing {action_input.action}: {str(e)}"
