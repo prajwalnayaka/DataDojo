@@ -212,6 +212,7 @@ Generated Datasets Mk1/
 Generated Datasets/
 
 rando.py
+server/test_app.py
 *.zip
 Twins/
 Datasets/
