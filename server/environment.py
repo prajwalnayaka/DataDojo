@@ -19,7 +19,7 @@ class DataCleaningEnv(Environment):
     def __init__(self, difficulty: str = "Easy", max_steps: int = 10):
         self.difficulty = difficulty
         self.max_steps = max_steps
-        self.skeletons_dir = Path(r"D:\DataDojo\server\Skeletons")
+        self.skeletons_dir = Path(r"./Skeletons")
         self.episode_id=str(uuid.uuid4())
         self.step_count = 0
         self.reward=0.0
