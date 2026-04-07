@@ -63,8 +63,10 @@ class DataCleaningEnv(Environment):
         max_steps= self.max_steps
         )
 
-    def reset(self) -> ObservationModel:
+    def reset(self,difficulty: str = None) -> ObservationModel:
         """Starts a new episode with a fresh, ruined dataset."""
+        if difficulty:
+            self.difficulty = difficulty
         self.master_df = generate_mk3_dataframe(self.skeletons_dir)
         self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
         self.step_count = 0
