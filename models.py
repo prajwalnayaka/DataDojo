@@ -76,5 +76,3 @@ class RewardModel(BaseModel):
     done:bool = Field(...)
 
     info:str = Field(...,description="'Success: Dropped column 'Unnamed: 0' OR 'Error: Cannot cast '$1,250' to float directly.'")
-
-    breakdown:List[Dict[str,float]] = Field(...,description="Breakdown of the end reward, what actions correspond to which rewards and/or penalties.")
