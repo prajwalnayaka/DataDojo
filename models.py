@@ -1,5 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel, Field
+from openenv.core.env_server.interfaces import Action, Observation
 from typing import Optional, Dict, Any, List
 
 
