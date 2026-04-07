@@ -184,7 +184,7 @@ class DataCleaningEnv(Environment):
             datatype_mismatch = 0
 
         new_error_count, error_count_reward_breakdown = self._calculate_total_errors(self.current_df.copy()) # Not current_df_copy as it doesn't reflect the changes that have been just done
-        REWARD_MULTIPLIER = 10
+        REWARD_MULTIPLIER = 5
         error_count_reward = ((self.prev_error_count - new_error_count)/self.initial_error_count)*REWARD_MULTIPLIER
         self.breakdown.append({error_count_reward_breakdown:error_count_reward})
 
@@ -205,7 +205,6 @@ class DataCleaningEnv(Environment):
             reward=float(self.reward),
             done=bool(self.done),
             info=self.info,
-            breakdown=self.breakdown
         )
 
         return rew
