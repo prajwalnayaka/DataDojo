@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 import uuid
 from openenv.core.env_server.interfaces import Environment
 from pathlib import Path
@@ -16,10 +17,12 @@ class DataCleaningEnv(Environment):
     """
     SUPPORTS_CONCURRENT_SESSIONS = True
     ENABLE_WEB_INTERFACE = True
-    def __init__(self, difficulty: str = "Easy", max_steps: int = 10):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    SKELETONS = os.path.join(BASE_DIR, "Skeletons")
+    def __init__(self, difficulty: str = "Easy", max_steps: int = 10, skeletons_dir=SKELETONS):
         self.difficulty = difficulty
         self.max_steps = max_steps
-        self.skeletons_dir = Path(r"./Skeletons")
+        self.skeletons_dir = Path(skeletons_dir)
         self.episode_id=str(uuid.uuid4())
         self.step_count = 0
         self.reward=0.0
