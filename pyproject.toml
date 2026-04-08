@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "DataDojo"
+version = "0.1.0"
+description = "An RL environment that trains LLM agents to clean dirty datasets using tool calls."
+authors = [
+  { name = "Prajwal Nayaka T", email = "prajwalnayakat@gmail.com" },
+    { name = "Pragya MV", email= "pragyamvikram@gmail.com"}
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pandas",
+    "numpy",
+    "openenv-core[core]",
+    "openai",
+    "pydantic",
+    "faker",
+]

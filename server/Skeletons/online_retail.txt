@@ -1,0 +1,29 @@
+[
+    {
+        "index": "Numbers [0:541908]"
+    },
+    {
+        "InvoiceNo": "Text/String. Very High Cardinality"
+    },
+    {
+        "StockCode": "Text/String. Very High Cardinality"
+    },
+    {
+        "Description": "Text/String. Very High Cardinality"
+    },
+    {
+        "Quantity": "Numbers [-80995:80995]"
+    },
+    {
+        "InvoiceDate": "Text/String. Very High Cardinality"
+    },
+    {
+        "UnitPrice": "Numbers [-11062.06:38970.0]"
+    },
+    {
+        "CustomerID": "Text/String. Very High Cardinality"
+    },
+    {
+        "Country": "Text/String. Very High Cardinality"
+    }
+]
