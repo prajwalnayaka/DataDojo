@@ -11,4 +11,4 @@ COPY . .
 WORKDIR /DataDojo/server
 
 EXPOSE 8080
-CMD ["python","app.py","--port","8080"]
+CMD ["python", "app.py", "--port", "8080"]
