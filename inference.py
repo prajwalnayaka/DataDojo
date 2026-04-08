@@ -1,13 +1,3 @@
-"""
-Inference Script — DataDojo
-===================================
-MANDATORY environment variables:
-    API_BASE_URL        The API endpoint for the LLM.
-    MODEL_NAME          The model identifier to use for inference.
-    HF_TOKEN / API_KEY  Your Hugging Face / API key.
-    LOCAL_IMAGE_NAME    The name of the local Docker image for the environment.
-"""
-
 import asyncio
 import json
 import os
