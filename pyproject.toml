@@ -21,3 +21,6 @@ dependencies = [
     "pydantic",
     "faker",
 ]
+
+[project.scripts]
+server = "server.app:main"
