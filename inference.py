@@ -4,7 +4,7 @@ import os
 import textwrap
 from typing import List, Optional
 
-from openai import OpenAI, timeout
+from openai import OpenAI
 
 from client import DataDojoEnv
 from models import ActionModel, ActionType
@@ -287,13 +287,7 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
 
 async def main() -> None:
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-    base_url = os.getenv("ENV_BASE_URL")
-
-    if base_url:
-        env = DataDojoEnv(base_url=base_url)
-        await env.__aenter__()
-    else:
-        env = await DataDojoEnv.from_docker_image(IMAGE_NAME)
+    env = await DataDojoEnv.from_docker_image(IMAGE_NAME,port=8000)
 
     try:
         for difficulty in DIFFICULTIES:
