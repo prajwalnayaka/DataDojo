@@ -28,11 +28,10 @@ IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
 API_BASE_URL = os.getenv("API_BASE_URL") or "https://router.huggingface.co/v1"
 MODEL_NAME = os.getenv("MODEL_NAME") or "Qwen/Qwen2.5-72B-Instruct"
-DIFFICULTY = os.getenv("DIFFICULTY") or "Easy"
-TASK_NAME = f"data-cleaning-{DIFFICULTY.lower()}"
+DIFFICULTIES = ["Easy", "Medium", "Hard"]
 BENCHMARK = "DataDojo"
 MAX_STEPS = 10
-TEMPERATURE = 0.2  # Low temp — we want precise, structured JSON actions
+TEMPERATURE = 0.2  # Low temp for precise, structured JSON actions
 MAX_TOKENS = 512
 SUCCESS_SCORE_THRESHOLD = 0.7  # Reward is tanh-normalized in [-1, 1]; 0.7 is a strong clean
 
@@ -208,25 +207,22 @@ def get_model_action(
 
 
 # ==========================================
-# 5. MAIN LOOP
+# 5. EPISODE RUNNER & MAIN LOOP
 # ==========================================
 
-async def main() -> None:
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
-
-    env = await DataDojoEnv.from_docker_image(IMAGE_NAME)
-
+async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None:
+    """Runs one full episode at a given difficulty level."""
+    task_name = f"data-cleaning-{difficulty.lower()}"
     history: List[str] = []
     rewards: List[float] = []
     steps_taken = 0
     score = 0.0
     success = False
 
-    log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
+    log_start(task=task_name, env=BENCHMARK, model=MODEL_NAME)
 
     try:
-        # Reset with chosen difficulty
-        reset_result = await env.reset()
+        reset_result = await env.reset(difficulty=difficulty)
         obs = reset_result.observation
 
         last_info = obs.info
@@ -241,7 +237,7 @@ async def main() -> None:
             action = get_model_action(
                 client=client,
                 step=step,
-                difficulty=DIFFICULTY,
+                difficulty=difficulty,
                 data_schema=obs.data_schema,
                 nans=obs.NaNs,
                 sample=obs.sample,
@@ -273,23 +269,31 @@ async def main() -> None:
             if done:
                 break
 
-        # Score: average reward across steps, clamped to [0, 1]
-        # Rewards are tanh-normalized in [-1, 1]; shift to [0, 1] for scoring
         if rewards:
             avg_reward = sum(rewards) / len(rewards)
-            score = (avg_reward + 1.0) / 2.0  # remap [-1,1] -> [0,1]
+            score = (avg_reward + 1.0) / 2.0  # remap tanh [-1,1] -> [0,1]
             score = min(max(score, 0.0), 1.0)
         success = score >= SUCCESS_SCORE_THRESHOLD
 
     except Exception as e:
-        print(f"[DEBUG] Episode error: {e}", flush=True)
+        print(f"[DEBUG] Episode error ({difficulty}): {e}", flush=True)
 
+    finally:
+        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
+
+
+async def main() -> None:
+    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+    env = await DataDojoEnv.from_docker_image(IMAGE_NAME)
+
+    try:
+        for difficulty in DIFFICULTIES:
+            await run_episode(env, difficulty, client)
     finally:
         try:
             await env.close()
         except Exception as e:
             print(f"[DEBUG] env.close() error: {e}", flush=True)
-        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
 
 if __name__ == "__main__":
