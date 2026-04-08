@@ -3,4 +3,4 @@ name: DataDojo
 type: space
 runtime: fastapi
 app: server.app:app
-port: 8080
+port: 7860
