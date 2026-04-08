@@ -9,7 +9,7 @@ sys.path.append(str(path))
 
 
 from models import ActionModel, ObservationModel
-from environment import DataCleaningEnv
+from .environment import DataCleaningEnv
 
 
 
