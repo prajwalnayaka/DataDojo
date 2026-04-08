@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import random
 from pathlib import Path
-from genesis_engine_mk3 import generate_mk3_dataframe
+from .genesis_engine_mk3 import generate_mk3_dataframe
 
 # ==========================================
 # 1. THE SABOTAGE FUNCTIONS
