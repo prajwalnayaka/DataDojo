@@ -5,8 +5,8 @@ from openenv.core.env_server.interfaces import Environment
 from pathlib import Path
 from typing import Tuple
 from models import ActionModel, ObservationModel, RewardModel, StateModel, ActionType
-from genesis_engine_mk3 import generate_mk3_dataframe
-from ruiner_engine_mk3 import run_ruiner
+from .genesis_engine_mk3 import generate_mk3_dataframe
+from .ruiner_engine_mk3 import run_ruiner
 
 
 class DataCleaningEnv(Environment):
