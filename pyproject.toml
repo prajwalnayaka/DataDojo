@@ -7,7 +7,7 @@ name = "DataDojo"
 version = "0.1.0"
 description = "An RL environment that trains LLM agents to clean dirty datasets using tool calls."
 authors = [
-  { name = "Prajwal Nayaka T", email = "prajwalnayakat.@gmail.com" },
+  { name = "Prajwal Nayaka T", email = "prajwalnayakat@gmail.com" },
     { name = "Pragya MV", email= "pragyamvikram@gmail.com"}
 ]
 requires-python = ">=3.10"
