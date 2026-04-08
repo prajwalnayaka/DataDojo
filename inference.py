@@ -63,12 +63,12 @@ SYSTEM_PROMPT = textwrap.dedent(
     You must respond with a single valid JSON object and nothing else. No markdown, no explanation.
     The JSON must match this schema exactly:
     {
-        "action": "<ACTION_TYPE>",
-        "column_name": "<column_name or null>",
-        "fill_value": "<value, mean, median, mode, or null>",
-        "target_type": "<float, int, str, or null>",
-        "regex_pattern": "<regex string or null>",
-        "mapping_dict": {"old": "new"} or null
+    "action": "ACTION_TYPE",
+    "column_name": "actual_column_name_to_be_altered", 
+    "fill_value": "value",
+    "target_type": "type",
+    "regex_pattern": "pattern",
+    "mapping_dict": {"old": "new"}
     }
 
     Example for stripping currency:
@@ -196,6 +196,9 @@ def get_model_action(
             raw = raw.strip()
 
         parsed = json.loads(raw)
+        for key in ["column_name", "fill_value", "target_type", "regex_pattern"]:
+            if parsed.get(key) in ["None", "null", "column_name", "<column_name or null>"]:
+                parsed[key] = None
         return ActionModel(**parsed)
 
     except Exception as exc:
