@@ -17,7 +17,7 @@ dependencies = [
     "pandas",
     "numpy",
     "openenv-core[core]",
-    "openai"
+    "openai",
     "pydantic",
     "faker",
 ]
