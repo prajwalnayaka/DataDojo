@@ -1,3 +1,16 @@
+---
+title: DataDojo
+emoji: 🥷
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+pinned: false
+app_port: 8000
+base_path: /web
+tags:
+  - openenv
+---
+
 # DataDojo: The Autonomous Data Cleaning Benchmark
 
 DataDojo is a containerized reinforcement learning environment designed to evaluate the reasoning and data-wrangling capabilities of AI agents. It provides a standardized "gym" where LLMs interact with corrupted datasets to reach a clean "reference" state through autonomous decision-making.
