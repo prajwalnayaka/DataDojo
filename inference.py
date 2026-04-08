@@ -19,6 +19,10 @@ from openai import OpenAI
 from client import DataDojoEnv
 from models import ActionModel, ActionType
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # ==========================================
 # 1. CONFIGURATION
 # ==========================================
@@ -93,7 +97,7 @@ def build_user_prompt(
     eda_result: Optional[dict],
     history: List[str],
 ) -> str:
-    history_block = "\n".join(history[-5:]) if history else "None"
+    history_block = "\n".join(history[-3:]) if history else "None"
     eda_block = json.dumps(eda_result, indent=2) if eda_result else "None"
     breakdown_block = json.dumps(last_breakdown) if last_breakdown else "None"
 
