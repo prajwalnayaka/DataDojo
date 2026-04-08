@@ -17,7 +17,6 @@ __pycache__/
 .idea/
 
 rando.py
-server/test_app.py
 *.zip
 Twins/
 Datasets/
