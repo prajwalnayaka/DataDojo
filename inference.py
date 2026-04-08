@@ -4,7 +4,7 @@ import os
 import textwrap
 from typing import List, Optional
 
-from openai import OpenAI
+from openai import OpenAI, timeout
 
 from client import DataDojoEnv
 from models import ActionModel, ActionType
@@ -53,6 +53,11 @@ SYSTEM_PROMPT = textwrap.dedent(
     - Easy: Look for duplicate rows, a fully empty column (drop it), and a column with ~30% NaNs (fill it).
     - Medium: Same as Easy, plus a numeric column corrupted with currency formatting (STRIP_CHAR then TYPE_CAST).
     - Hard: Same as Medium, plus categorical columns with inconsistent casing (LOWERCASE or MAP_VALUES).
+    
+    CRITICAL CONSTRAINTS:
+     - You MUST provide a valid string for 'column_name' for every action EXCEPT DROP_DUPLICATES.
+     - NEVER set 'column_name' to null for DROP_COLUMN, FILL_NA, or STRIP_CHAR. 
+     - If you fail to provide a valid column name from the schema, the action will FAIL.
 
     RESPONSE FORMAT:
     You must respond with a single valid JSON object and nothing else. No markdown, no explanation.
@@ -223,9 +228,11 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
         last_breakdown = obs.metadata.get("breakdown", [])
         eda_result = obs.EDA
 
+        done = False
         for step in range(1, MAX_STEPS + 1):
-            if reset_result.done:
+            if done:
                 break
+
 
             action = get_model_action(
                 client=client,
@@ -277,7 +284,13 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
 
 async def main() -> None:
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-    env = await DataDojoEnv.from_docker_image(IMAGE_NAME)
+    base_url = os.getenv("ENV_BASE_URL")
+
+    if base_url:
+        env = DataDojoEnv(base_url=base_url)
+        await env.__aenter__()
+    else:
+        env = await DataDojoEnv.from_docker_image(IMAGE_NAME)
 
     try:
         for difficulty in DIFFICULTIES:
