@@ -7,12 +7,10 @@ from openenv.core.env_server import create_web_interface_app
 path = Path(__file__).resolve().parent.parent
 sys.path.append(str(path))
 
-try:
-    from models import ActionModel, ObservationModel
-    from environment import DataCleaningEnv
-except ModuleNotFoundError:
-    from ..models import ActionModel, ObservationModel
-    from .environment import DataCleaningEnv
+
+from models import ActionModel, ObservationModel
+from environment import DataCleaningEnv
+
 
 
 app = create_web_interface_app(
