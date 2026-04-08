@@ -19,7 +19,7 @@ load_dotenv()
 
 IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 HF_TOKEN = os.getenv("HF_TOKEN")
-API_BASE_URL = os.getenv("API_BASE_URL") or "https://router.huggingface.co/v1"
+API_BASE_URL = os.getenv("API_BASE_URL") or "https://prajwalnayaka-datadojo.hf.space"
 MODEL_NAME = os.getenv("MODEL_NAME") or "Qwen/Qwen2.5-72B-Instruct"
 DIFFICULTIES = ["Easy", "Medium", "Hard"]
 BENCHMARK = "DataDojo"
