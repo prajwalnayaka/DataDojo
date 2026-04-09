@@ -57,7 +57,7 @@ SYSTEM_PROMPT = textwrap.dedent(
     CRITICAL CONSTRAINTS:
      - You MUST provide a valid string for 'column_name' for every action EXCEPT DROP_DUPLICATES.
      - NEVER set 'column_name' to null for DROP_COLUMN, FILL_NA, or STRIP_CHAR. 
-     - If you fail to provide a valid column name from the schema, the action will FAIL.
+     - If you fail to provide a valid column name from the schema, you'll be penalized.
 
     RESPONSE FORMAT:
     You must respond with a single valid JSON object and nothing else. No markdown, no explanation.
@@ -71,10 +71,8 @@ SYSTEM_PROMPT = textwrap.dedent(
     "mapping_dict": {"old": "new"}
     }
 
-    Example for stripping currency:
+    Examples:
     {"action": "STRIP_CHAR", "column_name": "Charges", "fill_value": null, "target_type": null, "regex_pattern": "[\\$,]", "mapping_dict": null}
-
-    Example for dropping duplicates:
     {"action": "DROP_DUPLICATES", "column_name": null, "fill_value": null, "target_type": null, "regex_pattern": null, "mapping_dict": null}
     """
 ).strip()
