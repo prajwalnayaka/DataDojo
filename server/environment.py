@@ -121,6 +121,7 @@ class DataCleaningEnv(Environment):
         datatype_mismatch = 0
         drop_dupes_spam=0
         drop_col_flag=False
+        eda_flag=False
 
         # --- If-elif switchboard ---
         try:
@@ -165,6 +166,7 @@ class DataCleaningEnv(Environment):
             elif act == ActionType.GET_VALUE_COUNTS:
                 # This doesn't change the DF, just provides info
                 self.last_eda_result = self.current_df[col].value_counts().to_dict()
+                eda_flag = True
                 self.info = f"Retrieved value counts for {col}"
 
             elif act == ActionType.MAP_VALUES:
@@ -181,7 +183,7 @@ class DataCleaningEnv(Environment):
 
         col_diff=abs(len(self.master_df.columns) - len(self.current_df.columns))
 
-        if len(self.last_eda_result)>7:
+        if eda_flag and self.last_eda_result>7:
             self.last_eda_result = dict(list(self.last_eda_result.items())[:7])
 
         # --- Rewards & Penalties ---
