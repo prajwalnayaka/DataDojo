@@ -25,6 +25,7 @@ class DataCleaningEnv(Environment):
         self.skeletons_dir = Path(skeletons_dir)
         self.episode_id=str(uuid.uuid4())
         self.step_count = 0
+        self.drop_dupes_counter = 0
         self.reward=0.0
         self.done = False
         self.breakdown = []
@@ -73,6 +74,7 @@ class DataCleaningEnv(Environment):
         self.master_df = generate_mk3_dataframe(self.skeletons_dir)
         self.current_df = run_ruiner(self.master_df.copy(), self.difficulty)
         self.step_count = 0
+        self.drop_dupes_counter = 0
         self.initial_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.prev_error_count,_ = self._calculate_total_errors(self.current_df.copy())
         self.last_eda_result = None
@@ -132,6 +134,7 @@ class DataCleaningEnv(Environment):
 
             elif act == ActionType.DROP_DUPLICATES:
                 self.current_df.drop_duplicates(inplace=True)
+                self.drop_dupes_counter+=1
                 self.info = "Successfully removed duplicate rows."
 
             elif act == ActionType.FILL_NA:
@@ -198,6 +201,10 @@ class DataCleaningEnv(Environment):
             self.breakdown.append({delete_column_abuse_breakdown: delete_column_abuse})                                                # which is no longer available in current_df_copy
         else:
             delete_column_abuse=0
+
+        if self.drop_dupes_counter>1:
+            drop_dupes_spam=-0.2
+            self.breakdown.append({"Used DROP_DUPLICATES tool call more than once.":drop_dupes_spam})
 
         self.reward=round(float(np.tanh(error_count_reward+datatype_mismatch+delete_column_abuse)),3) # Normalize between -1.0 & +1.0
 
