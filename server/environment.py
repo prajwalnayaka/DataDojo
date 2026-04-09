@@ -217,7 +217,8 @@ class DataCleaningEnv(Environment):
             self.breakdown.append({"Used DROP_DUPLICATES tool call more than once.":drop_dupes_spam})
 
         self.reward=round(float(np.tanh(error_count_reward+datatype_mismatch+delete_column_abuse+drop_dupes_spam+invalid_col_penalty)),4) # Normalize between -1.0 & +1.0
-        self.reward=min(max((self.reward+1.0)/2,0),1)
+        self.reward=int((self.reward+1.0)/2)
+        self.reward=max(0,min(self.reward,1))
 
         self.done = new_error_count < 0.10 * self.initial_error_count or self.step_count >= self.max_steps or col_diff > 1
         # If current dataset's error is less than 10% of what the model started off with OR if current step is greater than max allowed steeps OR difference in columns of current dataset and master dataset is more than 1
