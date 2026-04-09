@@ -181,6 +181,9 @@ class DataCleaningEnv(Environment):
 
         col_diff=abs(len(self.master_df.columns) - len(self.current_df.columns))
 
+        if len(self.last_eda_result)>7:
+            self.last_eda_result = dict(list(self.last_eda_result.items())[:7])
+
         # --- Rewards & Penalties ---
 
         invalid_col_penalty = 0
