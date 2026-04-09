@@ -106,7 +106,8 @@ def build_user_prompt(
 
     error_block = ""
     if "Error" in last_info:
-        error_block = f"\n⚠️ LAST ACTION FAILED: {last_info}\nDo NOT repeat this action. column_name is REQUIRED for DROP_COLUMN, FILL_NA, STRIP_CHAR, TYPE_CAST, LOWERCASE, GET_VALUE_COUNTS, MAP_VALUES. Use exact column names from the schema.\n"
+        error_block = (f"\n⚠️ LAST ACTION FAILED: {last_info}\nDo NOT repeat this action. column_name is REQUIRED for DROP_COLUMN, FILL_NA, STRIP_CHAR, TYPE_CAST, LOWERCASE, GET_VALUE_COUNTS, MAP_VALUES. Use exact column names from the schema.\n "
+                       f"Valid columns RIGHT NOW are: {list(data_schema.keys())}. You MUST pick from this exact list.")
 
     return textwrap.dedent(
         f"""
