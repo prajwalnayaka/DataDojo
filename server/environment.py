@@ -37,7 +37,7 @@ class DataCleaningEnv(Environment):
         self.last_eda_result = None
 
     def _get_observation(self)-> ObservationModel:
-        clean_sample = (self.current_df.head(10).astype(object).where(self.current_df.head(10).notnull(), None))
+        clean_sample = (self.current_df.head(5).astype(object).where(self.current_df.head(5).notnull(), None))
         # Timestamp/Date objects to strings
         processed_records = []
         for record in clean_sample.to_dict(orient="records"):
