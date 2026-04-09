@@ -134,7 +134,7 @@ class DataCleaningEnv(Environment):
 
             elif act == ActionType.DROP_DUPLICATES:
                 self.current_df.drop_duplicates(inplace=True)
-                self.drop_dupes_counter+=1
+                self.drop_dupes_counter=1
                 self.info = "Successfully removed duplicate rows."
 
             elif act == ActionType.FILL_NA:
