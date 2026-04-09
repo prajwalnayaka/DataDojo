@@ -70,6 +70,9 @@ SYSTEM_PROMPT = textwrap.dedent(
     "regex_pattern": "pattern",
     "mapping_dict": {"old": "new"}
     }
+    
+    IMPORTANT: DROP_DUPLICATES should only be used ONCE per episode. 
+    Using it more than once wastes a step and incurs a penalty. If you have already used DROP_DUPLICATES, do NOT use it again.
 
     Examples:
     {"action": "STRIP_CHAR", "column_name": "Charges", "fill_value": null, "target_type": null, "regex_pattern": "[\\$,]", "mapping_dict": null}
@@ -286,11 +289,7 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
             if done: # If the tasks in done after this current step, break out of the for i in range(1, MAX_STEPS+1)
                 break
 
-        if rewards:
-            score=max(rewards) if rewards else 0.0
-            score = (score + 1.0) / 2.0  # remap tanh [-1,1] -> [0,1]
-            score = min(max(score, 0.0), 1.0)
-        success = score >= SUCCESS_SCORE_THRESHOLD
+        success = done
 
     except Exception as e:
         print(f"[DEBUG] Episode error ({difficulty}): {e}", flush=True)
