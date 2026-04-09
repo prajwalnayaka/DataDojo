@@ -135,7 +135,7 @@ class DataCleaningEnv(Environment):
 
             elif act == ActionType.DROP_DUPLICATES:
                 self.current_df.drop_duplicates(inplace=True)
-                self.drop_dupes_counter=1
+                self.drop_dupes_counter += 1
                 self.info = "Successfully removed duplicate rows."
 
             elif act == ActionType.FILL_NA:
@@ -183,11 +183,15 @@ class DataCleaningEnv(Environment):
 
         # --- Rewards & Penalties ---
 
-        if action_input.column_name: # Penalty if the datatypes of the column isn't the same as in master_df. Breakdown encourage the agent to type cast into the correct datatype
+        invalid_col_penalty = 0
+        if action_input.column_name:
             col = action_input.column_name
-            if col in self.current_df.columns:
-                if self.current_df[col].dtype != self.master_df[col].dtype: # Not current_df_copy as it doesn't reflect the changes that have been done
-                    datatype_mismatch = -0.2
+            if col not in self.current_df.columns and action_input.action != ActionType.DROP_DUPLICATES: # Penalty if the agent send a column name that isn't in the dataset at all.
+                invalid_col_penalty = -0.1
+                self.breakdown.append({"Invalid column name — must use exact column name from the schema.": invalid_col_penalty})
+            elif col in self.current_df.columns:
+                if self.current_df[col].dtype != self.master_df[col].dtype: # Penalty if the datatypes of the column isn't the same as in master_df. Breakdown encourages the agent to type cast into the correct datatype
+                    datatype_mismatch = -0.2                                # master_df because current_df_copy because it's already wrong, courtesy of Ruiner
                     self.breakdown.append({"The datatypes of the selected column is not accurate, needs to be changed.":datatype_mismatch})
         else:
             datatype_mismatch = 0
@@ -207,7 +211,7 @@ class DataCleaningEnv(Environment):
             drop_dupes_spam=-0.2
             self.breakdown.append({"Used DROP_DUPLICATES tool call more than once.":drop_dupes_spam})
 
-        self.reward=round(float(np.tanh(error_count_reward+datatype_mismatch+delete_column_abuse+drop_dupes_spam)),4) # Normalize between -1.0 & +1.0
+        self.reward=round(float(np.tanh(error_count_reward+datatype_mismatch+delete_column_abuse+drop_dupes_spam+invalid_col_penalty)),4) # Normalize between -1.0 & +1.0
 
         self.done = new_error_count < 0.10 * self.initial_error_count or self.step_count >= self.max_steps or col_diff > 1
         # If current dataset's error is less than 10% of what the model started off with OR if current step is greater than max allowed steeps OR difference in columns of current dataset and master dataset is more than 1
