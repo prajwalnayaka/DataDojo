@@ -286,8 +286,25 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
 
 
 async def main() -> None:
+    print(f"[DEBUG] ENV_BASE_URL: {os.getenv('ENV_BASE_URL')}")
+    print(f"[DEBUG] LOCAL_IMAGE_NAME: {os.getenv('LOCAL_IMAGE_NAME')}")
+    print(f"[DEBUG] HF_TOKEN length: {len(os.getenv('HF_TOKEN', ''))}")
+    hf_token = os.getenv("HF_TOKEN")
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-    env = await DataDojoEnv.from_docker_image(IMAGE_NAME,port=8000)
+    if not hf_token:
+        print("[ERROR] HF_TOKEN is missing! Validator will fail.")
+        return
+    try:
+        image_name = os.getenv("LOCAL_IMAGE_NAME")
+        if not image_name:
+            print("[INFO] No URL or Image name.")
+            env = await DataDojoEnv.from_docker_image(base_url="http://localhost:8000")
+        else:
+            print(f"[INFO] Starting Docker image: {image_name}")
+            env = await DataDojoEnv.from_docker_image(image_name, port=8000)
+    except Exception as e:
+        print(f"[FATAL] Connection to environment failed: {e}")
+        return
 
     try:
         for difficulty in DIFFICULTIES:
