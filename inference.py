@@ -41,7 +41,7 @@ SYSTEM_PROMPT = textwrap.dedent(
 
     AVAILABLE ACTIONS:
     - DROP_DUPLICATES: Remove duplicate rows. No column_name needed.
-    - DROP_COLUMN: Drop an entire column. Use only for fully empty (all-NaN) columns.
+    - DROP_COLUMN: Must provide a value for 'column_name only from the data schema'. Look at 'NaN counts'—if a column has 100% NaNs, drop it by name. NEVER send null.
     - FILL_NA: Fill NaN values in a column. fill_value can be "mean", "median", "mode", or a literal value.
     - STRIP_CHAR: Remove characters from a column using a regex pattern. Use to fix currency strings like "$1,250.00".
     - TYPE_CAST: Cast a column to a target type. target_type can be "float", "int", "str".
@@ -94,10 +94,25 @@ def build_user_prompt(
 ) -> str:
     history_block = "\n".join(history[-3:]) if history else "None"
     eda_block = json.dumps(eda_result, indent=2) if eda_result else "None"
-    breakdown_block = json.dumps(last_breakdown) if last_breakdown else "None"
+    if last_breakdown:
+        breakdown_lines = "\n".join(
+            f"  • {list(d.keys())[0]}: {list(d.values())[0]:+.3f}"
+            for d in last_breakdown
+        )
+        breakdown_block = f"\n{breakdown_lines}"
+    else:
+        breakdown_block = " None"
+
+    error_block = ""
+    if "Error" in last_info:
+        error_block = f"\n⚠️ YOUR LAST ACTION FAILED: {last_info}\nYou MUST use a column name exactly as it appears in the Schema above. Do not guess or vary the name."
 
     return textwrap.dedent(
         f"""
+        
+         AVAILABLE COLUMNS (use ONLY these exact names):
+        {json.dumps(list(data_schema.keys()), indent=2)}
+    
         Step: {step} / {MAX_STEPS}
         Difficulty: {difficulty}
 
@@ -114,13 +129,16 @@ def build_user_prompt(
         --- LAST ACTION RESULT ---
         Info: {last_info}
         Reward: {last_reward:.3f}
-        Breakdown: {breakdown_block}
+        Breakdown of Reward: {breakdown_block}
 
         --- EDA RESULT (GET_VALUE_COUNTS output) ---
         {eda_block}
 
         --- ACTION HISTORY ---
         {history_block}
+        
+        --- ERROR LOGS ---
+        {error_block}
 
         Based on the dataset state above, decide your next cleaning action.
         Respond with a single JSON object only.
@@ -265,16 +283,16 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
             last_breakdown = obs.metadata.get("breakdown", [])
             eda_result = obs.EDA
 
-            action_str = action.model_dump_json(exclude_none=True)
+            action_str = action.model_dump_json(exclude_none=False)
             log_step(step=step, action=action_str, reward=reward, done=done, error=error)
-            history.append(f"Step {step}: {action_str} -> info='{obs.info}' reward={reward:+.3f}")
+            history.append(f"Step {step}: {action.model_dump_json(exclude_none=False)} -> info='{obs.info}' reward={reward:+.3f}")
 
             if done:
                 break
 
         if rewards:
-            avg_reward = sum(rewards) / len(rewards)
-            score = (avg_reward + 1.0) / 2.0  # remap tanh [-1,1] -> [0,1]
+            score=max(rewards) if rewards else 0.0
+            score = (score + 1.0) / 2.0  # remap tanh [-1,1] -> [0,1]
             score = min(max(score, 0.0), 1.0)
         success = score >= SUCCESS_SCORE_THRESHOLD
 
