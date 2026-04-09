@@ -251,8 +251,6 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
         eda_result = obs.EDA
 
         for step in range(1, MAX_STEPS + 1):
-            if done:
-                break
 
 
             action = get_model_action(
@@ -287,7 +285,7 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
             log_step(step=step, action=action_str, reward=reward, done=done, error=error)
             history.append(f"Step {step}: {action.model_dump_json(exclude_none=False)} -> info='{obs.info}' reward={reward:+.3f}")
 
-            if done:
+            if done: # If the tasks in done after this current step, break out of the for i in range(1, MAX_STEPS+1)
                 break
 
         if rewards:
