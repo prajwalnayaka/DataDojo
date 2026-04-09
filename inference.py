@@ -243,13 +243,13 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
     try:
         reset_result = await env.reset(difficulty=difficulty)
         obs = reset_result.observation
+        done = reset_result.done
 
         last_info = obs.info
         last_reward = 0.0
         last_breakdown = obs.metadata.get("breakdown", [])
         eda_result = obs.EDA
 
-        done = False
         for step in range(1, MAX_STEPS + 1):
             if done:
                 break
