@@ -75,7 +75,7 @@ SYSTEM_PROMPT = textwrap.dedent(
     Using it more than once wastes a step and incurs a penalty. If you have already used DROP_DUPLICATES, do NOT use it again.
 
     Examples:
-    {"action": "STRIP_CHAR", "column_name": "Charges", "fill_value": null, "target_type": null, "regex_pattern": "[\\$,]", "mapping_dict": null}
+    {"action": "STRIP_CHAR", "column_name": "Charges", "fill_value": null, "target_type": null, "regex_pattern": "[\\£,]", "mapping_dict": null}
     {"action": "DROP_DUPLICATES", "column_name": null, "fill_value": null, "target_type": null, "regex_pattern": null, "mapping_dict": null}
     """
 ).strip()
