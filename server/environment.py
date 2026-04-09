@@ -201,8 +201,8 @@ class DataCleaningEnv(Environment):
 
         self.reward=round(float(np.tanh(error_count_reward+datatype_mismatch+delete_column_abuse)),3) # Normalize between -1.0 & +1.0
 
-        self.done = new_error_count < 0.05 * self.initial_error_count or self.step_count >= self.max_steps or col_diff > 1
-        # If current dataset's error is less than 5% of what the model started off with OR if current step is greater than max allowed steeps OR difference in columns of current dataset and master dataset is more than 1
+        self.done = new_error_count < 0.10 * self.initial_error_count or self.step_count >= self.max_steps or col_diff > 1
+        # If current dataset's error is less than 10% of what the model started off with OR if current step is greater than max allowed steeps OR difference in columns of current dataset and master dataset is more than 1
 
         obs = self._get_observation()
         rew = RewardModel(
