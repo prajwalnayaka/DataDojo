@@ -289,21 +289,29 @@ async def main() -> None:
     print(f"[DEBUG] ENV_BASE_URL: {os.getenv('ENV_BASE_URL')}")
     print(f"[DEBUG] LOCAL_IMAGE_NAME: {os.getenv('LOCAL_IMAGE_NAME')}")
     print(f"[DEBUG] HF_TOKEN length: {len(os.getenv('HF_TOKEN', ''))}")
+    env_url = os.getenv("ENV_BASE_URL")
+    image_name = os.getenv("LOCAL_IMAGE_NAME")
     hf_token = os.getenv("HF_TOKEN")
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
     if not hf_token:
-        print("[ERROR] HF_TOKEN is missing! Validator will fail.")
+        print("[ERROR] HF_TOKEN is missing!")
         return
     try:
-        image_name = os.getenv("LOCAL_IMAGE_NAME")
-        if not image_name:
-            print("[INFO] No URL or Image name.")
-            env = await DataDojoEnv.from_docker_image(base_url="http://localhost:8000")
+        if env_url:
+            print(f"[INFO] Connecting to provided environment at {env_url}", flush=True)
+            env = DataDojoEnv(base_url=env_url)
+            await env.__aenter__()
+        elif image_name:
+            # Local Docker fallback
+            print(f"[INFO] Starting Docker image: {image_name}", flush=True)
+            env = await DataDojoEnv.from_docker_image(image_name, port=8000)
+            await env.__aenter__()
         else:
             print(f"[INFO] Starting Docker image: {image_name}")
-            env = await DataDojoEnv.from_docker_image(image_name, port=8000)
+            env = DataDojoEnv(base_url="http://localhost:8000")
+            await env.__aenter__()
     except Exception as e:
-        print(f"[FATAL] Connection to environment failed: {e}")
+        print(f"[FATAL] Connection to environment failed: {e}",flush=True)
         return
 
     try:
