@@ -291,6 +291,7 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
                 break
 
         success = done
+        score=sum(rewards)
 
     except Exception as e:
         print(f"[DEBUG] Episode error ({difficulty}): {e}", flush=True)
