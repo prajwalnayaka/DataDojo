@@ -290,8 +290,9 @@ async def run_episode(env: DataDojoEnv, difficulty: str, client: OpenAI) -> None
             if done: # If the tasks in done after this current step, break out of the for i in range(1, MAX_STEPS+1)
                 break
 
-        success = done
-        score=sum(rewards)
+        score = sum(rewards) / len(rewards) if rewards else 0.0  # average, not sum
+        score = max(0.001, min(score, 0.999))  # clamp strictly within (0,1)
+        success = done and score > SUCCESS_SCORE_THRESHOLD
 
     except Exception as e:
         print(f"[DEBUG] Episode error ({difficulty}): {e}", flush=True)
