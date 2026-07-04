@@ -13,7 +13,7 @@ class DataDojoEnv(EnvClient[ActionModel, ObservationModel, StateModel]):
             observation=ObservationModel(
                 done=obs_data.get("done", False),
                 reward=obs_data.get("reward", 0.0),
-                metadata=obs_data.get("metadata", {}),
+                metadata=obs_data.get("breakdown", {}),
                 data_schema=obs_data.get("data_schema", {}),
                 NaNs=obs_data.get("NaNs", {}),
                 sample=obs_data.get("sample", []),
