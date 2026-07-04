@@ -49,7 +49,7 @@ class DataCleaningEnv(Environment):
         return ObservationModel(
             done=self.done,
             reward=self.reward,
-            metadata={"breakdown":self.breakdown},
+            breakdown={"breakdown":self.breakdown},
             data_schema=self.current_df.dtypes.apply(lambda x: x.name).to_dict(),
             NaNs={k: int(v) for k, v in self.current_df.isnull().sum().to_dict().items()},
             sample=processed_records,
