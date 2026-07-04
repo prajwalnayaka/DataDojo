@@ -42,7 +42,7 @@ class ObservationModel(Observation):
 
     reward: float = Field(...)
 
-    metadata: Dict[Any, Any] = Field(...)
+    breakdown: Dict[Any, Any] = Field(...)
 
     data_schema: Dict[str,str] = Field(...,description="The datatypes of the dataset's columns. e.g., {'Price': 'object', 'Age': 'float64'}")
 
